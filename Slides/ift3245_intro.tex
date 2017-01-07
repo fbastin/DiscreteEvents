@@ -1,0 +1,140 @@
+\documentclass[t,usepdftitle=false]{beamer}
+\usepackage[utf8]{inputenc}
+\usetheme{Warsaw}
+\usepackage{xcolor}
+% \setbeamercovered{transparent}
+%\usecolortheme{crane}
+\title[IFT3245]{IFT 3245\\Simulation et modèles}
+\author[Fabian Bastin]{Fabian Bastin\\DIRO\\Université de Montréal}
+\date{Automne 2016}
+
+\begin{document}
+\frame{\titlepage}
+
+% ------------------------------------------------------------------------------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Objectifs}
+
+\begin{enumerate}
+\item
+Comprendre les enjeux principaux des modèles de simulations informatiques.
+\item
+Distinguer les divers types de modèles, et identifier les situations nécessitant le recours à la simulation.
+\item
+Notions d'événements discrets.
+\item
+Etre capable de construire les éléments d'une simulation à événements discrets.
+\item
+Collecter les résultats d'une simulation et les interpréter.
+\item
+Améliorer autant que possible la qualité de ces résultats.
+\item
+Illustration des concepts au moyen de modèles de transport.
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Support de cours}
+
+\begin{itemize}
+\item
+Notes de cours disponibles sur Studium (sujette à révision)
+\item
+Livre de référence conseillé (non obligatoire): 
+A. M. Law, Simulation Modeling and Analysis, quatrième édition, McGraw-Hill, USA, 2007.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Concepts de base}
+
+\begin{description}
+\item[Système]
+collection d'entités qui agissent et interagissent afin d'accomplir une certaine fin logique.\\
+L'état d'un système est la collection de variables nécessaires pour décrire un système à un instant particulier.
+\item[Modèle]
+description simplifiée d'un systeme, dans le but d'évaluer sa performance ou l'effet de certaines décisions.
+\item[Simulation]
+faire évoluer le modèle d'un système en fournissant les entrées appropriées, puis observer et analyser les résultats.
+\end{description}
+
+\mbox{}
+
+Deux types principaux de systèmes: discrets et continus.
+
+\mbox{}
+
+Pourquoi simuler?
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Modèles}
+
+Modèle physique vs modèle mathématique.
+
+\mbox{}
+
+Modèle analytique, numérique, par simulation.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Logiciels}
+
+Programmation sous Julia: \url{http://www.julialang.org}
+
+\mbox{}
+
+Paquetages Julia: SimJulia, Distributions, RandomStreams.
+
+\mbox{}
+
+Motivations:
+\begin{itemize}
+\item
+développer et comprendre les principes informatiques de la simulation par événéments discrets, en ``grattant'' le code;
+\item
+un prototype de simulation de trafic sera ajouté par la suite.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Pourquoi Julia?}
+
+Langage relativement nouveau, mais une base d'utilisateurs en croissance exponentielle, et de nombreux développeurs.
+
+\mbox{}
+
+Avantages: open-source, multi-plateforme, langage simple, peut être interfacé avec les langages traditionnels: C, C++, Fortran, Python,\ldots
+
+\mbox{}
+
+Peut être interprété ou compilé.
+
+\mbox{}
+
+Inconvénients: certains fonctions sont appelées à évoluer, et certaines librairies doivent être améliorées.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Évaluation du cours}
+
+4 devoirs, comptant pour 50\% de la note finale. Chacune des trois premiers devoirs vaudra 10\%. Le dernier 20\%.
+
+\mbox{}
+
+Examen intra: 20\%
+
+\mbox{}
+
+Examen fina: 30\%
+
+\end{frame}
+
+\end{document}
+

@@ -1,0 +1,278 @@
+\documentclass[t,usepdftitle=false]{beamer}
+\usepackage[utf8]{inputenc}
+\usetheme{Warsaw}
+\usepackage{xcolor}
+
+\usepackage{etex}
+\usepackage{pictex}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+\usepackage{pgfplots}
+
+\usepackage{amsmath}
+\usepackage{amscd}
+\usepackage{pstricks, pst-node}
+
+\usepackage{times}
+
+\usepackage{ulem}
+
+\usepackage{amsmath, amsthm}
+\usepackage{listings}
+
+% \setbeamercovered{transparent}
+%\usecolortheme{crane}
+\title[IFT3245]{IFT 3245\\Simulation et modèles}
+\author[Fabian Bastin]{Fabian Bastin\\DIRO\\Université de Montréal}
+\date{Automne 2016}
+
+\def\be{\boldsymbol{e}}
+\def\bh{\boldsymbol{h}}
+\def\bu{\boldsymbol{u}}
+\def\bv{\boldsymbol{v}}
+\def\bx{\boldsymbol{x}}
+\def\bA{\boldsymbol{A}}
+\def\bP{\boldsymbol{P}}
+\def\bX{\boldsymbol{X}}
+\def\bY{\boldsymbol{Y}}
+
+\def\cH{\mathcal{H}}
+\def\cJ{\mathcal{J}}
+\def\cS{\mathcal{S}}
+
+\def\rit{\mathcal{R}}
+\def\NN{\mathcal{N}}
+\def\RR{\mathcal{R}}
+\def\ZZ{\mathcal{Z}}
+
+\def\eps {$< 10^{-15}$}
+\def\epsm {$> 1-10^{-15}$}
+
+\def\MSE{\mbox{MSE}}
+\def\RE{\mbox{RE}}
+\def\eff{\mbox{Eff}}
+\def\Var{\mbox{Var}}
+\def\var{\mbox{var}}
+
+\def\iid{i.i.d.}
+\def\toas{\mbox{ to as }}
+\def\To{\overset{D}{\to}}
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}
+\frametitle{Estimation séquentielle}
+
+Pour un intervalle de confiance de niveau $1-{\alpha}$, si on fixe ${n}$, la largeur 
+$I_2-I_1$ est aléatoire.
+
+\mbox{}
+
+Si on veut $I_2 - I_1 \le {w}$ pour $w$ fixé, la valeur minimale de $n$
+requise est une variable aléatoire ${N}$.
+
+\mbox{}
+
+Comment \emph{prédire} ce $N$? 
+
+\mbox{}
+
+Pour $X_i \sim$ \emph{binomiale}$(1,{p})$, avec $n=1000$ on a obtenu 
+$\overline{X}_n = 0.882$,  $S_n^2 \approx {0.1042}$, et la demi-largeur du
+intervalle de confiance à 95\%{} était de 0.020.
+Combien de répétitions additionnelles faut-il pour réduire
+la demi-largeur à environ {0.005}?
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Estimation séquentielle}
+
+Nous voulons $1.96 S_n/\sqrt{n} \le 0.005$.
+En supposant que $S_n$ ne changera pas significativement, cela donne
+$n \ge (1.96\times S_n / 0.005)^2 \approx 16011.8$.
+En conséquence, nous pouvons recommander de faire 15012 répétitions
+additionnelles.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Procédure à deux étapes}
+
+Cette approche est valable pour la loi de Student (ou normale).
+
+\mbox{}
+
+Faire ${n_0}$ répétitions et calculer $S^2_{n_0}$;
+la prédiction du $n$ requis est 
+\[
+  {\hat{N}^*} 
+  = \min\left\{n \mid (t_{n-1,1-\alpha/2}) S_{n_0}/\sqrt{n}\le r\right\}.
+\]
+On fera $\max(0,\ \hat{N}^*-n_0)$ répétitions additionnelles.
+
+\mbox{}
+
+Bien sûr, il se peut que ce soit insuffisant, ou trop.
+
+\mbox{}
+
+Après $n_0$, recalculer $S_n^2$ et la demi-largeur pour chaque $n$.
+On s'arrête dès que $I_2 - I_1 \le w$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Procédure à deux étapes}
+
+Cette procédure est biaisée, car on tend à s'arrêter à un
+$N$ où $S_N^2$ \emph{sous-estime} la variance.  
+
+\mbox{}
+
+Mais lorsque $w\to 0$, le bias disparaît, 
+$N/n^* \to 1$ a.p.1
+où ${n^*}$ est la valeur optimale de $N$ si on connaissait $\sigma^2$,
+et $P[|\overline{X}_N - \mu| \le w/2] \to 1-\alpha$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{IC pour des estimateurs de quantile}
+
+Si ${X}$ est de répartition ${F}$, le
+\emph{$q$-quantile} de $F$ est 
+\[
+  {\xi_q} = F^{-1}(q) = \inf\{x : F(x) \ge {q}\}.
+\]
+Soit $X_{(1)},\dots,X_{(n)}$ un échantillon \iid{} de $X$, trié,
+et $\hat F_n$ la fonction de répartition empirique.
+Un estimateur simple de $\xi_q$ est le \emph{quantile empirique}
+\[
+  {\hat\xi_{q,n}} = \hat F_n^{-1}(q) = \inf\{x : \hat F_n(x) \ge q\}
+            = X_{(\lceil nq\rceil)}.
+\]
+Il est biaisé mais fortement consistent et obéit au théorème de la
+limite centrale, comme le montre le théorème ci-après.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{IC pour des estimateurs de quantile: théorème}
+
+\textsl{
+\begin{enumerate}[(i)]
+\item
+Pour chaque $q$, $\hat\xi_{q,n} \toas \xi_q$ quand $n\to\infty$.
+\item
+Si $X$ a une densité ${f}$ strictement positive et continue 
+ dans un voisinage de $\xi_q$, alors
+\[
+  \frac{\sqrt{n} (\hat\xi_{q,n} - \xi_q) f(\xi_q)}{ \sqrt{q(1-q)}}
+    \To N(0,1)  \quad\mbox{ quand } n\to\infty.
+\]
+\end{enumerate}
+}
+
+\mbox{}
+
+Ce TLC indique qu'il y a beaucoup de bruit (variance) si $f(\xi_q)$
+est petit.
+
+\mbox{}
+
+De plus, pour l'utiliser afin de construire un intervalle de
+confiance, il faut estimer $f(\xi_q)$, ce qui est difficile.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{IC pour des estimateurs de quantile}
+
+Nous pouvons néanmoins construire une méthode non-asymptotique de
+calcul d'un intervalle de confiance pour $\xi_q$: supposons que $F$ est continue en $\xi_q$.
+
+\mbox{}
+
+Soit ${B}$ le nombre d'observations $X_{(i)}$ inférieures à $\xi_q$.
+
+\mbox{}
+
+Puisque $P[X < \xi_q] = q$, $B$ est binomiale$(n,q)$.
+
+\mbox{}
+
+Si $1\le j < k \le n$, $X_{(j)} < \xi_q \leq X_{(k)}$ ssi $j \leq B < k$.
+Alors
+\[
+ P[{X_{(j)}} < \xi_q \le {X_{(k)}}]
+ =  P[j\le B < k] 
+ = \sum_{i=j}^{k-1} {n\choose i}  q^i(1-q)^{n-i}. 
+\]
+On choisit ${j}$ et ${k}$ pour que cette somme soit supérieure ou
+égale à $1-\alpha$ (intervalle unilatéral ou bilatéral).
+
+\end{frame}
+
+\begin{frame}
+\frametitle{IC pour des estimateurs de quantile}
+
+Si $n$ est grand et $q$ n'est pas trop proche de 0 ou 1, on peut
+approximer la loi binomiale par la loi \emph{normale}:
+\[
+\frac{B - nq}{\sqrt{nq(1-q)}} \approx N(0,1).
+\]
+On obtient alors $j = \lfloor nq + 1 - \delta\rfloor$ et 
+$k = \lfloor nq + 1 + \delta\rfloor$, où
+$\delta = \sqrt{nq(1-q)}\Phi^{-1}(1-\alpha/2)$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Exemple: valeur à risque}
+
+Soit ${L}$ la perte nette de valeur d'un porte-feuille d'actifs pour
+une période de temps donnée $[0,{T}]$.
+La valeur à risque (VAR) (au
+temps 0) est la valeur de ${x_p}$ telle que $P[L > x_p] = p$.
+C'est le $(1-p)$-quantile de $L$.
+
+\mbox{}
+
+Valeurs courantes: $p = 0.01$, $T=$ 2 semaines (banques),
+$T=$ mois ou années (assurance, fonds de pension).
+
+\mbox{}
+
+On peut critiquer l'utilisation de la VAR, vu qu'elle
+donne une information très limitée.
+
+\mbox{}
+
+Par exemple si $x_{0.01} = 10^7$ dollars, que sait-on sur l'importance
+réelle de la perte?
+
+\mbox{}
+
+Une mesure complémentaire pourrait être $E[L \mid L > x_p]$, 
+par exemple.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Exemple: valeur à risque}
+
+Modèles pour estimer la VAR: on doit modéliser l'évolution du prix des
+actifs (souvent plusieurs milliers, dépendants). Souvent: modèles à
+facteurs.
+
+\mbox{}
+
+On peut remplacer les actifs par des prêts, comptes à payer, etc.
+Sauf dans les cas simples, on estime la VAR par simulation.
+Quand $p$ est petit: ``importance sampling''. 
+
+\end{frame}
+
+\end{document}

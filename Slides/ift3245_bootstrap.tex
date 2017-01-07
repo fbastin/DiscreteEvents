@@ -1,0 +1,459 @@
+\documentclass[t,usepdftitle=false]{beamer}
+\usepackage[utf8]{inputenc}
+\usetheme{Warsaw}
+\usepackage{xcolor}
+
+\usepackage{etex}
+\usepackage{pictex}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+\usepackage{pgfplots}
+
+\usepackage{amsmath}
+\usepackage{amscd}
+\usepackage{pstricks, pst-node}
+
+\usepackage{times}
+
+\usepackage{ulem}
+
+\usepackage{amsmath, amsthm}
+\usepackage{listings}
+
+% \setbeamercovered{transparent}
+%\usecolortheme{crane}
+\title[IFT3245]{IFT 3245\\Simulation et modèles}
+\author[Fabian Bastin]{Fabian Bastin\\DIRO\\Université de Montréal}
+\date{Automne 2016}
+
+\def\be{\boldsymbol{e}}
+\def\bh{\boldsymbol{h}}
+\def\bu{\boldsymbol{u}}
+\def\bv{\boldsymbol{v}}
+\def\bx{\boldsymbol{x}}
+\def\bA{\boldsymbol{A}}
+\def\bP{\boldsymbol{P}}
+\def\bX{\boldsymbol{X}}
+\def\bY{\boldsymbol{Y}}
+
+\def\cH{\mathcal{H}}
+\def\cJ{\mathcal{J}}
+\def\cS{\mathcal{S}}
+
+\def\rit{\mathcal{R}}
+\def\NN{\mathcal{N}}
+\def\RR{\mathcal{R}}
+\def\ZZ{\mathcal{Z}}
+
+\def\eps {$< 10^{-15}$}
+\def\epsm {$> 1-10^{-15}$}
+
+\def\MSE{\mbox{MSE}}
+\def\RE{\mbox{RE}}
+\def\eff{\mbox{Eff}}
+\def\Var{\mbox{Var}}
+\def\var{\mbox{var}}
+
+\def\iid{i.i.d.}
+\def\toas{\mbox{ to as }}
+\def\To{\overset{D}{\to}}
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}
+\frametitle{Intervalle de confiance par rééchantillonnage (``bootstrap'')}
+
+Il s'agit de de techniques de simulation appliquées en statistique;
+l'idée est d'estimer la distribution (inconnue et quelconque) de
+l'estimateur en rééchantillonnant des échantillons de taille ${n}$ en
+tirant avec remplacement dans l'échantillon de taille ${n}$ original.
+
+\mbox{}
+
+Pour chaque échantillon ainsi construit, nous recalculons l'estimateur
+en cours d'étude.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Principe de plug-in}
+
+Considérons un échantillon i.i.d. $\bX = X_1,\dots,X_n$, issu d'une loi de
+fonction de répartition ${F}$, et un estimateur ${Y} =
+{g}(X_1,\dots,X_n)$ d'une valeur réelle inconnue ${\theta}$.
+
+\mbox{}
+
+Exemple:
+\[
+Y = \overline{X}_n
+\]
+avec $\theta=\mu$, ou
+\[
+Y = S_n^2\]
+avec
+$\theta = \sigma^2$.
+
+\mbox{}
+
+$Y$ peut être biaisé (i.e. $E[Y] \not= \theta$), mais nous supposons
+que $g$ ne dépend pas de l'ordre des $X_i$'s.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Principe de plug-in}
+
+Si nous ne connaissons pas la ditribution exacte $F$, nous pouvons
+toujours nous diriger vers la distribution empirique
+construite à partir de l'échantillon
+$\bX$.
+
+\mbox{}
+
+L'estimateur plug-in d'un paramètre $\theta = g(F)$ est défini comme
+\[
+\hat{\theta} = g(\hat{F}).
+\]
+
+\mbox{}
+
+En général, l'estimateur plug-in d'une espérance $\theta = E_F(x)$ est
+\[
+E_{\hat{F}} = \frac{1}{n} \sum_{i = 1}^n x_i = \overline{x},
+\]
+autrement dit nous retrouvons l'estimateur de moyenne classique.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Principe de plug-in}
+
+Le principe de plug-in est en général assez bon, si la seule source d'information
+disponible à propos de $F$ vient de l'échantillon $\bX$.
+
+\mbox{}
+
+Sous cette circonstance, $\hat{\theta}_n = g(\hat{F}_n)$ ne peut pas être
+amélioré comme estimateur de $\theta = g(F)$, du moins pas dans le sens
+asymptotique habituel en théorie statistique.
+Par exemple, si $\hat{f}_k$ est l'estimateur de fréquence plug-in
+$\#\lbrace x_i = k \rbrace/n$, alors
+\[
+\hat{f}_k \sim \mbox{Bi}(n, f_k)/n.
+\]
+Dans ce cas, l'estimateur $\hat{f}_k$ est non-biaisé pour $f_k$,
+$E[\hat{f}_k] = f_k$, de variance $f_k(1-f_k)/n$.
+Il s'agit de la plus petite variance possible pour un estimateur sans
+biais de $f_k$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Bootstrap non-paramétrique}
+
+Considérons à présent ${K_n(F, z)} = P[Y-\theta \le z]$ pour $z\in\RR$.
+Un intervalle de confiance \emph{exact} pour $\theta$, au niveau
+$1 - \alpha_1 - \alpha_2$, est
+\[
+  ({I_1}, {I_2}) =
+  (Y - K_n^{-1}(F,1-\alpha_1),\; Y - K_n^{-1}(F,\alpha_2)),
+\]
+où $K_n^{-1}(F,q)$ est le $q$-quantile de $K_n(F,\cdot)$.
+
+\mbox{}
+
+En effet,
+\begin{align*}
+P[I_1 > \theta] 
+&= P[Y - \theta > K_n^{-1}(F,1-\alpha_1)] \\
+&= 1-K_n(F,\, K_n^{-1}(F,1-\alpha_1)) \\
+&= \alpha_1.
+\end{align*}
+De même, nous avons $P[I_2 < \theta] = \alpha_2$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Bootstrap non-paramétrique}
+
+Toutefois, il est rare de connaître $K_n(F,\cdot)$.
+
+\mbox{}
+
+Une première idée serait de répéter l'expérience $m$ fois afin obtenir
+$m$ copies \iid{} de $Y$ pour estimer sa distribution.
+Si $E[Y]=\theta$, on peut estimer ainsi la distribution de $Y-\theta$.
+Mais cela ferait $mn$ simulations!
+
+\mbox{}
+
+Souvent, il est très coûteux, voire même impossible, d'avoir de nouvelles
+copies de $Y$.
+L'idée du bootstrap consiste à remplacer $F$ par $\hat{F}_n$ et
+$\theta$ par $y$ dans $K_n(F,z)$.
+
+\mbox{}
+
+Soient ${x_1},\dots,{x_n}$ les valeurs de $X_1,\dots,X_n$ et 
+${y} = g(x_1,\dots,x_n)$.\\
+Tirons ${X_1^*},\dots,{X_n^*}$ au hasard avec remplacement de
+l'échantillon de départ $\{x_1,\dots,x_n\}$ (i.e., de $\hat F_n$) et
+calculons ${Y^*} = g(X_1^*,\dots,X_n^*)$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Bootstrap non-paramétrique de base}
+
+L'opération est répétée ${m}$ fois, de sorte que nous obtenions $m$
+copies i.i.d. de $Y^*$, à savoir ${Y_1^*},\dots,{Y_m^*}$.
+
+\mbox{}
+
+Cela revient à répéter l'expérience $m$ fois avec $\hat F_n$ au lieu de $F$.
+
+\mbox{}
+
+La notation étoile indique que $\bx^*$ n'est pas l'ensemble de données
+réel $\bx$, mais plutôt une version randomisée, ou rééchantillonnée,
+de $\bx$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Ex: algorithme bootstrap d'estimation d'écarts-type}
+
+\begin{enumerate}
+\item
+Tirer $m$ échantillons bootstrap indépendants $\bx^*_1$,
+$\bx_2$,\ldots, $\bx^*_m$, chacun consistant de $n$ valeurs de données
+tirées avec remplacement de $\bx$.
+\item
+Evaluer la réplication bootstrap correspondante à chaque échantillon
+bootstrap,
+\[
+\hat{\theta}^*(i) = g(x_i^*),\ i = 1,2,\ldots,m.
+\]
+\item
+Estimer l'erreur standard $\mbox{se}_F(\hat{\theta})$ par l'écart-type
+échantillonnal des $m$ réplications:
+\[
+\hat{\mbox{se}}_m = \sqrt{\frac{1}{m-1} \sum_{i = 1}^m (\hat{\theta}^*(i) -
+  \hat{\theta}^*(\cdot))^2},
+\]
+où $\hat{\theta}^*(\cdot) = \frac{1}{m} \sum_{i = 1}^m \hat{\theta}^*(i)$.
+\end{enumerate}
+
+\[
+\lim_{m \rightarrow \infty} \hat{\mbox{se}}_m = \mbox{se}_{\hat{F}}
+= \mbox{se}_{\hat{F}}(\hat{\theta}^*).
+\] 
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Ex: algorithme bootstrap d'estimation d'écarts-type}
+
+L'estimateur de bootstrap idéal $\mbox{se}_{\hat{F}}(\hat{\theta}^*)$
+et son approximation $\hat{\mbox{se}}_m$ sont parfois appelés
+estimateurs bootstrap non-paramétriques car ils sont basés sur
+$\hat{F}$, l'estimateur non-paramétrique de la population $F$.
+
+Soit ${\hat K_{n,m}}$ la fonction de répartition empirique de
+$Y_1^*-y, \dots, Y_m^*-y$.
+Pour $m\to\infty$, elle converge vers la fonction de répartition de
+$Y^* - y$, qui est $K_n(\hat F_n,\cdot)$.
+L'intervalle de confiance retourné est:
+\[
+  (y - \hat K_{n,m}^{-1}(1-\alpha_1),\; 
+   y - \hat K_{n,m}^{-1}(\alpha_2))
+ = (2y - Y_{(\lceil m(1-\alpha_1)\rceil)}^*,\;
+    2y - Y_{(\lceil m\alpha_2\rceil)}^*).
+\]
+Cela revient à remplacer $F$ par $\hat F_n$ puis à approximer
+$K_n(\hat F_n,\cdot)$ par $\hat K_{n,m}$.
+Il y a donc deux sources d'erreur, qui sont cependant la plupart du temps inévitables.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Bootstrap-t non-paramétrique}
+
+Supposons que nous disposons également d'un estimateur de la variance de $Y$, disons  ${S^2} = {h}^2(X_1,\dots,X_n)$.
+
+\mbox{}
+
+Soit ${J_n(F,\cdot)}$ la fonction de répartition de la statistique \emph{studentisée} $(Y - \theta)/S$.
+
+\mbox{}
+
+Un intervalle de confiance exact de niveau $(1-\alpha_1-\alpha_2)$:
+\[
+  (I_1, I_2) =
+  (Y - J_n^{-1}(F,1-\alpha_1) S,\;  Y - J_n^{-1}(F,\alpha_2) S).
+\]
+
+\mbox{}
+
+L'algorithme du bootstrap-$t$ non-paramétrique consiste, pour chacune des ${m}$ répétitions bootstrap, à générer ${n}$ observations $X_1^*,\ldots,X_n^*$ comme avant, puis à calculer ${Y^*} = g(X_1^*,\dots,X_n^*)$,   ${S^*} = h(X_1^*,\dots,X_n^*)$, et ${Z^*} = (Y^*-y)/S^*$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Bootstrap-t non-paramétrique}
+
+Soient ${Z_1^*}, \dots, {Z_m^*}$ les $m$ copies \iid\ de $Z^*$ et
+${\hat J_{n,m}}$ leur fonction de répartition empirique.
+Pour calculer l'intervalle de confiance, on remplace $J_n(F,\cdot)$ par $\hat J_{n,m}(\cdot)$:
+\begin{eqnarray*}
+  (I_1, I_2)
+ &=& (y - \hat J_{n,m}^{-1}(1-\alpha_1) S,\; 
+      y - \hat J_{n,m}^{-1}(\alpha_2) S) \\
+ &=& (y - Z_{(\lceil m(1-\alpha_1)\rceil)}^* S,\;
+      y - Z_{(\lceil m\alpha_2\rceil)}^* S). \nonumber
+\end{eqnarray*}
+
+\mbox{}
+
+Empiriquement, le bootstrap-$t$ performe souvent le mieux.
+
+\mbox{}
+
+Le \emph{choix de $m$} influence peu l'erreur de couverture, mais un trop
+petit $m$ donne des intervalle de confiance dont la largeur varie beaucoup.
+
+\mbox{}
+
+Un choix populaire consiste à prendre $m = 1000$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Estimation du biais}
+
+Une application particulièrement intéressante du bootstrap est la
+possibilité d'estimer le biais d'un estimateur quelconque.
+
+\mbox{}
+
+Sous la distribution $F$, le biais d'un estimateur $\hat{\theta} =
+g(\bX)$ d'une quantité inconnue $\theta = t(F)$ est défini comme
+\[
+B_F(\hat{\theta}, \theta) = E_F[g(\bX)]-t(F).
+\]
+
+\mbox{}
+
+L'estimateur bootstrap de biais est défini comme
+\[
+B_{\hat{F}}(\hat{\theta}, \theta) = E_{\hat{F}}[g(\bX^*)] - t(\hat{F}).
+\]
+
+\mbox{}
+
+L'estimateur plug-in $t(\hat{F})$ de $\theta$ peut différer de
+$\hat{\theta} = g(x)$.
+En d'autres termes, $B_{\hat{F}}(\hat{\theta}, \theta)$ est
+l'estimateur plug-in de $B_{F}(\hat{\theta}, \theta)$, que
+$\hat{\theta}$ soit ou non l'estimateur plug-in de $\theta$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Estimation du biais}
+
+Dans la plupart des cas, $E_{\hat{F}}[g(\bX^*)]$ devra être approximé
+par simulation Monte-Carlo:
+\[
+\hat{\theta}^* = \frac{1}{m}\sum_{i = 1}^{m} \theta^*(i) =
+\frac{1}{m}\sum_{i = 1}^{m} g(\bx^*_i).
+\]
+L'estimateur de bootstrap de biais basé sur les $m$ réplications
+bootstrap est
+\[
+\hat{B}_m = \hat{\theta}^* - t(\hat{F}).
+\]
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Estimation du biais: version améliorée}
+
+Il est possible d'améliorer cet estimateur 
+quand $\hat{\theta}$ est l'estimateur plug-in $t(\hat{F})$ de $\theta
+= t(F)$.
+
+\mbox{}
+
+Soit $P^*_j$ la proportion du $j^{e}$ point de données
+originales dans l'échantillon bootstrap $\bx^* = \lbrace x_1^*, x_2^*,
+\ldots, x_n^* \rbrace$:
+\[
+P_j^* = \frac{\# \lbrace x_i^* = x_j \rbrace}{n}, \ j = 1,2,\ldots,n.
+\]
+
+\mbox{}
+
+Le vecteur de rééchantillonnage
+\[
+\bP^* = (P_1^*, P_2^*, \ldots, P_n^*)
+\]
+a des composantes non-négatives dont la somme est égale à 1.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Estimation du biais: version améliorée}
+
+Une réplication bootstrap $\hat{\theta}^*$ peut être vue comme une
+fonction du vecteur de rééchantillonnage $\bP^*$.
+Pour $\hat{\theta} = t(\hat{F})$, l'estimateur plug-in de $\theta$,
+nous écrivons
+\[
+\hat{\theta}^* = T(\bP^*)
+\]
+pour indiquer que $\hat{\theta}^*$ est une fonction du vecteur de
+rééchantillonnage.
+
+\mbox{}
+
+Les $m$ échantillons bootstrap $\bx_1^*$, $\bx^*_2$,\ldots, $\bx^*_m$
+donnent lieu aux vecteurs de rééchantillonnage correspondants $P_1^*$,
+$P_2^*$, \ldots, $P_m^*$.
+
+\mbox{}
+
+Définissons $\overline{P}^*$ comme la moyenne de ces vecteurs:
+\[
+\overline{\bP}^* = \frac{1}{m} \sum_{i = 1}^m \bP^*_i.
+\]
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Estimation du biais: version améliorée}
+
+En écrivant
+\[
+\bP_0 = \left( \frac{1}{n}, \frac{1}{n},\ldots, \frac{1}{n} \right),
+\]
+l'estimateur de biais bootstrap devient
+\[
+\hat{B}_m = \hat{\theta}^* - T(\bP_0).
+\]
+L'estimateur de bootstrap amélioré est défini comme
+\[
+\overline{B}_m = \hat{\theta}^* - T(\overline{\bP}^*).
+\]
+$\hat{B}_m$ et $\overline{B}_m$ convergent vers $B_{\hat{F}}$,
+toutefois il est possible de montrer que la convergence est plus
+rapide pour $\overline{B}_m$.
+
+Il est toutefois dangereux d'utiliser ces estimations de biais pour
+corriger l'estimateur $\hat{\theta}$, car ils ajoutent de la variance
+à ce dernier.
+\end{frame}
+
+\end{document}

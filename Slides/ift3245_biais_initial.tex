@@ -1,0 +1,367 @@
+\documentclass[t,usepdftitle=false]{beamer}
+\usepackage[utf8]{inputenc}
+\usetheme{Warsaw}
+\usepackage{xcolor}
+
+\usepackage{etex}
+\usepackage{pictex}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+\usepackage{pgfplots}
+
+\usepackage{amsmath}
+\usepackage{amscd}
+\usepackage{pstricks, pst-node}
+
+\usepackage{times}
+
+\usepackage{ulem}
+
+\usepackage{amsmath, amsthm}
+\usepackage{listings}
+
+% \setbeamercovered{transparent}
+%\usecolortheme{crane}
+\title[IFT3245]{IFT 3245\\Simulation et modèles}
+\author[Fabian Bastin]{Fabian Bastin\\DIRO\\Université de Montréal}
+\date{Automne 2016}
+
+\def\be{\boldsymbol{e}}
+\def\bh{\boldsymbol{h}}
+\def\bu{\boldsymbol{u}}
+\def\bv{\boldsymbol{v}}
+\def\bx{\boldsymbol{x}}
+\def\bA{\boldsymbol{A}}
+\def\bP{\boldsymbol{P}}
+\def\bX{\boldsymbol{X}}
+\def\bY{\boldsymbol{Y}}
+\def\bmu{\boldsymbol{\mu}}
+\def\bSigma{\boldsymbol{\Sigma}}
+\def\bzero{\boldsymbol{0}}
+
+\def\eqas{\overset{\mbox{p.s.}}{=}}
+
+\def\cH{\mathcal{H}}
+\def\cJ{\mathcal{J}}
+\def\cS{\mathcal{S}}
+
+\def\rit{\mathcal{R}}
+\def\NN{\mathcal{N}}
+\def\RR{\mathcal{R}}
+\def\ZZ{\mathcal{Z}}
+
+\def\eps {$< 10^{-15}$}
+\def\epsm {$> 1-10^{-15}$}
+
+\def\MSE{\mbox{MSE}}
+\def\RE{\mbox{RE}}
+\def\eff{\mbox{Eff}}
+\def\Var{\mbox{Var}}
+\def\Cov{\mbox{Cov}}
+\def\var{\mbox{var}}
+
+\def\iid{i.i.d.}
+\def\toas{\mbox{ to as }}
+\def\To{\overset{D}{\to}}
+
+\newtheorem{thm}{Theorème}
+\newtheorem{coro}{Corollaire}
+\newtheorem{prop}{Proposition}
+\newtheorem{exe}{Exemple}
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}
+\frametitle{Détection et réduction du biais initial}
+
+Idéalement, nous souhaiterions générer l'état initial selon la loi
+d'équilibre,
+En effet, dans un tel cas, il n'y aurait aucun biais, mais une telle
+manière de procéder est en général très délicate.
+
+\mbox{}
+
+Pratiquement, il n'est dès lors pas possible de procéder ainsi, et il
+nous faudra considérer le biais résultant de l'état initial de la
+simulation.
+
+\mbox{}
+
+Si $(\mu_i, \sigma_i^2, \rho_{i,i+j}) \to (\mu, \sigma^2, \rho_j)$
+quand $i\to\infty$, la question est alors de savoir comment détecter et
+réduire le biais $|E[\bar C_n] - \mu|$? 
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Détection et réduction du biais initial}
+
+Les solutions pratiques sont avant tout heuristiques.
+
+\mbox{}
+
+Considérons un processus en temps discret $\{{C_i},\, i\ge 1\}$ (le
+cas continu est similaire), et supposons que l'on ne compte pas les
+${n_0}$ premières observations:
+\[
+ \bar C_{n_0,n} = {1\over n-n_0} \sum_{j=n_0+1}^n C_j.
+\]
+
+\mbox{}
+
+Souvent, nous pouvons écrire $|E[C_i]-\mu| \le \kappa_0 \beta^i$
+(i.e. $|E[C_i] - \mu| \in O(\beta^i)$) pour $\kappa_0 < \infty$ et
+${\beta} < 1$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Détection et réduction du biais initial}
+
+Dans ce cas, nous avons
+\begin{eqnarray*}
+ \left| E[\bar C_{n_0,n}]-\mu \right|
+ &\le& {\kappa_0\over n-n_0} \sum_{i=n_0+1}^n \beta^i
+  = {\kappa_0\beta^{n_0+1}(1-\beta^{n-n_0}) \over (n-n_0)(1-\beta)} \\
+ &\in& O\left(\frac{\beta^{n_0+1}}{(n-n_0)(1-\beta)}\right) 
+  \approx O\left(\frac{\beta^{n_0}}{n(1-\beta)}\right)
+\end{eqnarray*}
+si $n$ est très grand par rapport à $n_0$.
+
+\mbox{}
+
+En d'autres termes, $|E[\bar C_n] - \mu|$ est en $O(1/(n(1-\beta)))$,
+si $n \gg n_0$.
+
+\mbox{}
+
+En augmentant $n_0$, nous diminuons le biais, mais ce faisant, nous
+augmentons aussi la variance, qui est dans $O(1/(n-n_0))$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Détection et réduction du biais initial}
+
+Quand $n$ tend vers l'infini, le carré du biais devient négligeable
+par rapport à la variance, ainsi que, par conséquent, sa contribution
+dans le MSE.
+
+\mbox{}
+
+Il n'existe cependant aucune méthode fiable et universelle permettant
+de choisir $n_0$ (ou $t_0$) en pratique.
+
+\mbox{}
+
+Une manière populaire de procéder est d'utiliser l'heuristique de
+Welch.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Heuristique de Welch}
+
+\begin{enumerate}
+\item[1.]
+ Faire ${k}$ simulations de longueur ${n_1}$. Soit
+ ${C_{ij}}$ l'observation $j$ de la répétition $i$.
+\item[2.]
+ Posons ${\bar C_j} = \sum_{i=1}^k C_{ij}/k$.
+\item[3.] 
+ Lissage des hautes fréquences par une moyenne mobile de largeur ${w}$: 
+$$
+  {\bar C_j(w)} = 
+  \begin{cases}
+    \frac{1}{2w+1} \sum_{s=-w}^w \bar C_{j+s}, & j=w+1,\dots,n_1-w, \\
+    \frac{1}{2j-1} \sum_{s=-(j-1)}^{j-1} \bar C_{j+s}, & j=1\,\ldots,w.
+  \end{cases}
+$$
+\item[4.] 
+  Regardons le graphique de $\bar C_j(w)$ en fonction de $j$ et soit 
+  ${n_0}$ la valeur de $j$ où le processus semble stable
+  (choix \emph{subjectif}).
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{heuristique de Welch}
+
+Schématiquement, la procédure peut être résumée comme suit.
+
+\mbox{}
+
+\begin{center}
+\begin{tabular}{l|l}
+\hline
+Simulation 1 &  $C_{11}, C_{12}, \ldots , C_{1,j-w}, \ldots, C_{1,j+w}, \ldots, C_{1,T_1}$ \\
+Simulation 2 & $C_{21}, C_{22}, \ldots , C_{2,j-w}, \ldots, C_{2,j+w}, \ldots, C_{2,T_1}$ \\
+$\vdots$ & \\
+Simulation $N$ &
+$C_{N1}, C_{N2}, \ldots , C_{N,j-w}, \ldots, C_{N,j+w}, \ldots, C_{N,T_1}$ \\
+\hline
+Moyenne & $\overline{C}_1, \overline{C}_2, \ldots , \overline{C}_{j-w}, \ldots, \overline{C}_{j+w}, \ldots, \overline{C}_{T_1}$ \\
+Moyenne mobile & $\overline{C}_{j-w}(w)$ \\
+\hline
+\end{tabular}
+\end{center}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Horizon tronqué}
+
+Une fois $n_0$ (ou $t_0$) choisi, nous faisons ${k}$ répétitions
+indépendantes de longueurs $T_1,\dots,T_k$, où les ${T_i}$ sont
+des variables déterministes ou aléatoires.
+
+\mbox{}
+
+Pour la répétition $i$, posons
+$$
+  {X_i} = {1\over T_i-t_0} \sum_{j=N(t_0)+1}^{N(T_i)} C_j.
+$$
+Un estimateur global est alors ${\bar X_k} = (1/k)\sum_{i=1}^k X_i$.
+
+\mbox{}
+
+Si $k$ est strictement plus grand que 2, nous pouvons exploiter le fait que les $X_i$ sont \iid{}
+pour estimer la variance et calculer un intervalle de confiance.
+Il s'agit l'approche ``\emph{réplication-suppression}.''
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Horizon tronqué}
+
+Dans le cas discret, nous avons
+\[
+  {X_i} = {1\over n-n_0} \sum_{j=n_0+1}^{n} C_j.
+\]
+Pour un budget de calcul fixe $kn$, comment choisir $k$?
+
+\mbox{}
+
+Typiquement, $k=1$ minimise le MSE, mais pas toujours,
+et il est plus difficile d'estimer la variance lorsque $k=1$.
+
+\mbox{}
+
+Le MSE est minimisé pour $k$ strictement plus grand que 1 lorsque
+\begin{enumerate}[(a)]
+\item
+les autocorrélations diminuent très lentement \emph{et}
+\item
+le biais initial est très faible ou diminue très vite.
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Horizon tronqué}
+
+Supposons que
+\[
+|E[C_j] - \mu| = {\kappa_0 \beta}^j
+\]
+et
+\[
+\Cov[C_i,\, C_{i+j}] = \sigma^2 \rho_j = \sigma^2{\alpha}^j
+\]
+pour $j\ge 0$, où $\beta < 1$, $0<\alpha<1$, $\kappa_0 > 0$,
+et $\sigma^2 > 0$.
+
+\mbox{}
+
+Budget de calcul ${B} = nk$. Choisir ${k}$ et ${n_0}$ pour minimiser
+\begin{eqnarray*}
+ && \MSE[\bar X_k] ~=~  (E[X_i-\mu])^2 + \Var[X_i]/k \\
+ &=& \left({\kappa_0(\beta^{n_0+1}-\beta^{n+1}) 
+       \over (n-n_0)(1-\beta)}\right)^2
+  + \frac{\sigma^2}{(n-n_0)k} \times \\ 
+ &&  \left(1+2\sum_{j=1}^{n-n_0-1} \frac{\alpha^j(n-n_0-j)}{n-n_0}\right).
+\end{eqnarray*}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Horizon tronqué}
+
+Il faut prendre $k>1$ si $\beta$ et $\kappa_0$ sont petits et 
+si $\sigma^2$ et $\alpha$ sont grands.
+
+\mbox{}
+
+Mais si $n_0$ et $n$ sont fixés et $k\to\infty$,
+le biais ne disparait pas et le TLC devient
+\[
+ \frac{\sqrt{k}(\bar X_k - \mu)}{\sigma_{n_0,n}} 
+   \To N(0,1) + \frac{\sqrt{k} \beta_{n_0,n}}{\sigma_{n_0,n}},
+\]
+où ${\beta_{n_0,n}} = E[X_i] - \mu$ et 
+${\sigma^2_{n_0,n}} = \Var[X_i]$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Horizon tronqué}
+
+Un intervalle de confiance basé sur l'hypothèse que les $X_i$ sont \iid{} normales est asymptotiquement valide seulement si
+$\sqrt{k}\beta_{n_0,n} / \sigma_{n_0,n}\to 0$ quand $k\to\infty$.
+
+\mbox{}
+
+Autrement dit, le biais doit converger vers zéro plus vite que 
+l'écart-type de $\bar X_k$.
+
+\mbox{}
+
+Si $|E[C_j] - \mu| = \kappa_0 \beta^j$ et $\rho_j = \sigma^2\alpha^j$,
+alors
+\[
+ \beta_{n_0,n} = 
+ {\kappa_0(\beta^{n_0+1}-\beta^{n+1}) \over (n-n_0)(1-\beta)}
+ ~\in~ O\left(\frac{\beta^{n_0}}{n-n_0}\right)
+\]
+et
+\[
+  \frac{\sigma_{n_0,n}^2}{k} 
+ = \frac{\sigma^2}{(n-n_0)k} 
+   \left(1+2\sum_{j=1}^{n-n_0-1} \frac{\alpha^j(n-n_0-j)}{n-n_0}\right)
+ ~\in~ O\left(\frac{1}{(n-n_0)k}\right).
+\]
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Horizon tronqué}
+
+Ainsi,
+\[
+  \frac{\sqrt{k}\;\beta_{n_0,n}}{\sigma_{n_0,n}} 
+  ~\in~ O\left(\sqrt{k/(n-n_0)}\; \beta^{n_0}\right).
+\]
+
+\mbox{}
+
+Cette expression converge vers $0$ lorsque $k\to\infty$ si et seulement si 
+\[
+\ln \left( \sqrt{\frac{k}{n-n_0}}\beta^{n_0}\right) \rightarrow -\infty
+\]
+quand $k$ tend vers l'infini, ou, en d'autres termes, si et seulement si
+$\ln[k/(n-n_0)]/2 + n_0 \ln \beta \to -\infty$. Comme $\beta$ est
+supposé strictement plus petit que 1, cela revient à exiger
+\[
+  \frac{\ln[k/(n-n_0)]}{2\ln\beta} + n_0 \to \infty.
+\]
+
+\mbox{}
+
+Autrement dit, si on augmente $k$, il faut aussi augmenter $n$ et
+$n_0$ assez vite.
+
+\end{frame}
+
+\end{document}

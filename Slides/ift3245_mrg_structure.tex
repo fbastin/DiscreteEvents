@@ -1,0 +1,439 @@
+\documentclass[t,usepdftitle=false]{beamer}
+\usepackage[utf8]{inputenc}
+\usetheme{Warsaw}
+\usepackage{xcolor}
+
+\usepackage{etex}
+\usepackage{pictex}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+\usepackage{pgfplots}
+
+\usepackage{amsmath}
+\usepackage{amscd}
+\usepackage{pstricks, pst-node}
+
+\usepackage{times}
+
+\usepackage{ulem}
+
+\usepackage{amsmath, amsthm}
+\usepackage{listings}
+
+% \setbeamercovered{transparent}
+%\usecolortheme{crane}
+\title[IFT3245]{IFT 3245\\Simulation et modèles}
+\author[Fabian Bastin]{Fabian Bastin\\DIRO\\Université de Montréal}
+\date{Automne 2016}
+
+\def\be{\boldsymbol{e}}
+\def\bh{\boldsymbol{h}}
+\def\bu{\boldsymbol{u}}
+\def\bv{\boldsymbol{v}}
+\def\bx{\boldsymbol{x}}
+\def\bA{\boldsymbol{A}}
+
+\def\cJ{\mathcal{J}}
+\def\cS{\mathcal{S}}
+
+\def\rit{\mathcal{R}}
+\def\RR{\mathcal{R}}
+\def\ZZ{\mathcal{Z}}
+
+\begin{document}
+\frame{\titlepage}
+
+
+\begin{frame}
+\frametitle{Structure de réseau}
+
+Considérons le sous-ensemble de $[0,1]^t$ construit à partir des différents états initiaux possibles du générateur.
+\[
+{\Psi_t} = \{\boldsymbol{u} = (u_0,\dots,u_{t-1})
+   = (g(s_0),\dots,g(s_{t-1})),\ s_0 \in\cS \}.
+\]
+Un critère majeur est que $\Psi_t$ doit recouvrir $[0,1]^t$ 
+\emph{très uniformément}, et ce pour ``tout'' $t$.
+
+\mbox{}
+
+Par généralisation, nous chercherons également à mesurer l'uniformité de ${\Psi_I} = \{ (u_{i_1},\dots,u_{i_t}) \mid s_0 \in \cS\}$ pour une classe choisie d'ensembles d'indices de forme  ${I} = \{i_1, i_2, \cdots, i_t\}$.
+La récurrence linéaire à la base d'un MRG a comme conséquence majeure de produire une
+structure pour l'ensemble $\Psi_t$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Structure de réseau}
+
+Soit $(x_0,\dots,x_{k-1})$ dans $\{0,1,\dots,m-1\}^k$, et la base canonique de $\rit^k$:
+\[
+ \lbrace \be_i,\ i = 1,\ldots,k \rbrace,
+\]
+
+\mbox{}
+
+Si {$(x_0,\dots,x_{k-1}) = \be_1 = (1,0,\dots,0)$}, la récurrence du MRG donne
+\begin{align*}
+(x_1,\dots,x_k) &= (0,\dots,a_k), \\ 
+(x_2,\dots,x_k, x_{k+1}) &= (0,\dots, a_k,\, a_1 a_k \mod m), \\
+(x_3,\dots,x_{k+2}) &= (0,\dots,\, (a_1^2 + a_2) a_k \mod m), \dots
+\end{align*}
+Si {$(x_0,\dots,x_{k-1}) = \be_2 = (0,1,\dots,0)$}, \hbox{} alors
+\begin{align*}
+(x_1,\dots,x_k) &= (1,0,\dots, a_{k-1}), \\ 
+(x_2,\dots,x_k, x_{k+1}) &= (0,\dots, a_{k-1},\, (a_1 a_{k-1} + a_k) \mod m), \\ 
+ (x_3,\dots,x_{k+2}) &= (0,\dots,\,(a_1^2 a_{k-1} + a_1 a_k + a_2 a_{k-1}) \mod m), 
+ \dots
+\end{align*}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Structure de réseau}
+
+Nous pouvons continuer de la sorte jusqu'à considérer
+{$(x_0,\dots,x_{k-1}) = \be_k = (0,\dots,0,1)$}, ce qui produit
+\begin{align*}
+ (x_1,\dots,x_k) &= (0,\dots,1,\,a_1), \\ 
+ (x_2,\dots,x_k, x_{k+1}) &= (0,\dots, 1, a_1,\, (a_1^2 + a_2)\mod m), \ldots.
+ \end{align*}
+
+\mbox{}
+
+Or tout vecteur $(x_n,\dots,x_{n+t-1})$ qui obéit à la récurrence, 
+pour $t\ge k$, est une combinaison linéaire à coefficients entiers de ces $k$ vecteurs de base.
+
+
+\mbox{}
+
+Pour le voir, notons ${x_{i,0}, x_{i,1}, x_{i,2},\dots}$ la suite
+obtenue à partir du vecteur de base $\be_i$.
+Un état initial $(x_0,\dots,x_{k-1}) = (z_1,\dots,z_k)$ peut
+s'écrire comme $z_1 \be_1 + \cdots + z_k \be_k$ et produit la suite
+\[
+z_1 (x_{1,0}, x_{1,1}, \dots) + \cdots + 
+ z_k (x_{k,0}, x_{k,1}, \dots) \mod m,
+\]
+et réciproquement.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Structure de réseau}
+
+% , si une suite est une telle combinaison linéaire,
+% elle est obtenue à partir de l'état 
+% $(x_0,\dots,x_{k-1}) = (z_1,\dots,z_k)$.
+La réduction modulo $m$ se fait en soustrayant des vecteurs $m\be_i$.
+Ainsi, pour $t\ge k$, $(x_{0}, x_{1},\dots, x_{t-1})$ suit la récurrence
+si et seulement s'il s'agit d'une combinaison linéaire à coefficients entiers de
+\begin{eqnarray*}
+ & (1,0,\dots,0, x_{1,k}, \dots, x_{1,t-1}) \\
+ &  \vdots \\
+ & (0,0,\dots,1, x_{k,k}, \dots, x_{k,t-1}) \\
+ & (0,0,\dots,0, m, \dots, 0) \\
+ &  \vdots \\
+ & (0,0,\dots,0, 0, \dots, m).
+\end{eqnarray*}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Structure de réseau}
+
+En divisant par $m$, on obtient que
+$(u_{0},\dots,u_{t-1})\in [0,1)^t$ est dans $\Psi_t$ si et seulement si
+c'est une combinaison linéaire (sur les entiers) de
+\begin{eqnarray*}
+ \bv_1 &=& (1,0,\dots,0, x_{1,k}, \dots, x_{1,t-1})^T/m \\
+  \vdots && \vdots \\
+ \bv_k &=& (0,0,\dots,1, x_{k,k}, \dots, x_{k,t-1})^T/m \\
+ \bv_{k+1} &=& (0,0,\dots,0, 1, \dots, 0)^T \\
+  \vdots && \vdots \\
+ \bv_{t} &=& (0,0,\dots,0, 0, \dots, 1)^T.
+\end{eqnarray*}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Structure de réseau}
+
+Si 
+\begin {eqnarray*}
+  {L_t} &=& \left\{\bv = \sum_{i=1}^t z_i \bv_i \;\mid\; z_i\in\mathcal{Z}\right\}
+\end {eqnarray*}
+est le réseau ayant ces vecteurs pour base, alors
+${\Psi_t = L_t \cap [0,1)^t}$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{$m=101$, $a=12$; $\bv_1 = {(1,12)/101}$, $\bv_2 = {(0,1)}$}
+
+\input lcg12.tex 
+
+\end{frame}
+
+\begin{frame}
+\frametitle{LCG with $m=101$ and $a=7$}
+
+\input lcg7.tex 
+
+\end{frame}
+
+\begin{frame}
+\frametitle{LCG with $m=101$ and $a=51$}
+
+\input lcg51.tex 
+ 
+\end{frame}
+
+\begin{frame}
+\frametitle{LCG with $m=101$ and $a=51$}
+
+Pour $t > k$, il y a $m^t$ vecteurs dont les coordonnées sont des multiples de $1/m$, mais seulement $m^k$ sont dans $\Psi_t$
+(il n'y a que $m^k$ états initiaux possible), soit une proportion de
+$1/m^{t-k}$.
+
+\mbox{}
+
+Cette structure de réseau implique que les points de $\Psi_t$ sont
+distribués suivant un schéma très régulier.
+
+\mbox{}
+
+Par exemple, chaque point de $L_t$ a un plus proche voisin à la même
+distance et dans la même direction que n'importe quel autre point, et
+il y a des familles d'hyperplans parallèles
+équidistants qui couvrent tous les points.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Structure de réseau}
+
+Au regard de cette structure particulière, des manières naturelles de
+mesurer l'uniformité de ce genre d'ensemble de points $\Psi_t$
+incluent:
+\begin{enumerate}
+\item
+la distance d'un point à son plus proche voisin, qui est aussi la
+distance de l'origine au point le plus proche, ou de manière
+équivalente le vecteur non-nul le plus court dans $L_t$;
+\item
+La distance entre les deux hyperplans les plus éloignés qui couvrent
+une région ne contenant aucun point de $L_t$;
+\item
+le nombre minimum d'hyperplans équidistants parallèles qui peuvent
+couvrir tous les points de $\Psi_t$.
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Distance au plus proche voisin}
+
+Pour obtenir la première mesure, nous devons calculer le plus court
+vecteur non nul dans un réseau de base $\bv_1,\dots,\bv_t$:
+\[
+ \mbox{Minimiser } \Vert\bv\Vert_2^2 = 
+  \sum_{i=1}^t \sum_{j=1}^t z_i \bv_i^T \bv_j z_j 
+\]
+sous les contraintes que $z_1,\dots,z_t$ soient entiers et non tous nuls.
+
+\mbox{}
+
+Il s'agit par conséquent d'un probléme d'optimisation quadratique en
+nombres entiers, lequel est difficile à résoudre.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Distance entre les hyperplans}
+
+Pour traiter les deux autres mesures proposées, nous avons tout
+d'abord besoin de définir le réseau dual, dénoté $L_t^*$, comme suit:
+\[
+  L_t^* = \{\bh \in \RR^t : \bh\cdot\bv \in\mathcal{Z} \mbox{ pour tout  }\bv\in L_t\}.
+\]
+
+\mbox{}
+
+Pour chaque vecteur $\bh \in L_t^*$ et chaque entier $z$, l'ensemble
+$\lbrace \bv \in \RR^t: h^Tv = z\rbrace$ est un hyperplan
+orthogonal à $h$.
+Quand $z$ parcourt tous les entiers, nous obtenons dès lors une
+famille d'hyperplans parallèles qui couvrent tous les points $\bv$ de
+$L_t$, car $\bh^T\bv \in \ZZ$ pour $\bv \in L_t$.
+
+\mbox{}
+
+La distance entre deux hyperplans est la distance entre l'hyperplan
+défini avec $z=1$ et celui défini avec $z = 0$, i.e., à l'origine,
+puisque ce dernier contient l'origine.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Distance entre les hyperplans}
+
+Il est possible de montrer que cette distance vaut $1/\|\bh\|_2$.
+Si ${\ell_t}$ est la longueur du plus court vecteur 
+$\bh$ non nul dans $L_t^*$, alors la distance entre les hyperplans
+pour la famille où ils sont le plus éloignés est $1/\ell_t$.
+Par conséquent, nous cherchons à maximiser $\ell_t$.
+
+\mbox{}
+
+Un petit nombre d'hyperplans parallèles couvrant tous les points de
+$\psi_t$ peut être trouvé en calculant le vecteur non-nul le plus
+court dans $L_t^*$ en utilisant la norme $\mathcal{L}_1$ au lieu de la
+norme euclidienne.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Indices lacunaires}
+
+Plutôt de que considérer des indices consécutifs, nous pouvons
+considérer n'importe quel ensemble de $t$ index (distincts) ${I} = \{i_1,
+i_2, \cdots, i_t\}$. Dans ce cas, nous avons
+\begin {eqnarray*}
+  {\Psi_I} 
+   &=& \{ (u_{i_1},\dots,u_{i_t}) \mid 
+              s_0 = (x_0,\dots,x_{k-1}) \in \mathcal{Z}_m^k\},\\
+   &=& {L_I} \cap [0,1)^t, \\
+  1/{\ell_I} &=& \mbox { distance entre les hyperplans dans $L_I$.}
+\end {eqnarray*}
+
+\mbox{}
+
+Note: $\mathcal{Z}_m = \lbrace 0, 1, 2, \ldots, m-1 \rbrace$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Mesures d'uniformité}
+
+Des bornes supérieures de la forme 
+$\ell_t \le {\ell^*_t(n)}$ pour un réseau général de 
+densité $n$ dans $\RR^t$ existent.
+
+\mbox{}
+
+Nous pouvons dès lors standardiser $\ell_t$ par $\ell_t /
+\ell_t^*(m^k)$ pour avoir une mesure dans $[0,1]$, ce qui permet
+d'obtenir la figure de mérite générale:
+\[
+  {M_{\cJ}} = \min_{I\in \cJ}\; \ell_I / \ell_{|I|}^*(m^k)
+\]
+où ${\cJ}$ est une famille d'ensembles $I = \{i_1, i_2, \cdots, i_t\}$.
+
+\mbox{}
+
+La recherche de générateurs potentiellement intéressants passe alors
+par le calul numérique des paramètres qui maximisent cette mesure.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Autres bornes}
+
+Si $i\in I$ lorsque $a_{k-i} \not= 0$ (avec $a_0=-1$), alors
+\[
+  \ell_I^2 \le 1 + a_1^2 + \cdots + a_k^2.    \label {eq:mrg-lbound1}
+\]
+
+\mbox{}
+
+Il faut donc que cette somme soit grande!
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Preuve partielle.}
+
+%\begin{proof}
+Considérons $I = \{0,\dots,t-1\}$ et prenons $\bh=(-a_k,\dots, -a_1, 1, 0,\dots,0)^T$.
+Si $\bv = (v_0,v_1,\dots,v_{t-1})^T \in L_t$, alors 
+$$v_k = (a_1 v_{k-1} + \cdots + a_k v_{0}) \mod 1$$
+ou
+$$0 = (v_k - a_1 v_{k-1} - \cdots - a_k v_{0}) \mod 1 = \bh^T \bv \mod 1. $$
+Ainsi, $\bh^T \bv$ doit être un entier, i.e., $\bh \in L_t^*$.
+
+Donc $\ell_t^2 \le \Vert\bh\Vert_2^2 = 1 + a_1^2 + \cdots + a_k^2$.
+
+\mbox{}
+
+Se généralise au cas de $\ell_I$.
+%\end{proof}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Exemple: Lagged-Fibonacci}
+
+\[
+  x_n = (\pm x_{n-r} \pm x_{n-k}) \mod m.
+\]
+Pour $I = \{0,k-r,k\}$, on a $1/\ell_I \ge 1/\sqrt{3} \approx .577.$ \\
+Les vecteurs $(u_n, u_{n+k-r}, u_{n+k})$ sont tous contenus dans deux plans!
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Fonction \texttt{random} de la
+glibc}
+
+
+L'exemple à éviter\ldots
+
+\mbox{}
+
+Le générateur commence par inialiser un tableau de 34 nombres sur le
+principe du générateur Standard Minimal:
+\begin{enumerate}
+\item
+$x_0 = s$; $x_i = 16807*x_{i-1}\mod 2^{31}-1$ (pour $i = 1,\ldots,30$);
+\item
+$x_i = x_{i-31}$ (pour $i = 31,\ldots,33$) .
+\end{enumerate}
+
+\mbox{}
+
+Pour $i \geq 34$, l'algorithme suit l'algorithme de Lagged-Fibonacci,
+avec $m = 2^{31}$:
+\[
+x_i = (x_{i-3} + x_{i-31}) \mod 2^{31}.
+\]
+Enfin, la fonction ignore les 344 premiers nombres et supprime le bit
+de poids faible:
+\[
+o_i = x_{i+344} >> 1.
+\]
+\end{frame}
+
+\begin{frame}
+\frametitle{Fonction \texttt{random} de la glibc: observations}
+
+Le générateur résume ce qu'il convient de ne pas faire:
+\begin{enumerate}
+\item
+le générateur Standard Minimal est dépassé;
+\item
+les vecteurs $x_i, x_{i+28}, x_{i+31}$ sont contenus dans deux plans;
+\item
+la linéarité n'est pas complétement supprimée en enlevant le bit de
+poids faible, vu que pour $i \geq 34$,
+\[
+o_i = o_{i-31} + o_{i-3} \mod 2^{31} \mbox{ ou } o_i = o_{i-31} +
+o_{i-3} + 1 \mod 2^{31},
+\]
+et on conserve la majeure partie des inconvénients liés
+à $m = 2^{31}$.
+\end{enumerate}
+
+\end{frame}
+
+\end{document}

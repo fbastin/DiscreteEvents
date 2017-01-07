@@ -1,0 +1,360 @@
+\documentclass[t,usepdftitle=false]{beamer}
+
+\usepackage[utf8]{inputenc}
+\usetheme{Warsaw}
+\usepackage{xcolor}
+
+\usepackage{etex}
+\usepackage{pictex}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+\usepackage{pgfplots}
+
+\usepackage{amsmath}
+\usepackage{amscd}
+\usepackage{pstricks, pst-node}
+
+\usepackage{times}
+
+\usepackage{ulem}
+
+\usepackage{amsmath, amsthm}
+\usepackage{listings}
+
+% \setbeamercovered{transparent}
+%\usecolortheme{crane}
+\title[IFT3245]{IFT 3245\\Simulation et modèles}
+\author[Fabian Bastin]{Fabian Bastin\\DIRO\\Université de Montréal}
+\date{Automne 2016}
+
+\def\be{\boldsymbol{e}}
+\def\bh{\boldsymbol{h}}
+\def\bu{\boldsymbol{u}}
+\def\bv{\boldsymbol{v}}
+\def\bx{\boldsymbol{x}}
+\def\bA{\boldsymbol{A}}
+\def\bP{\boldsymbol{P}}
+\def\bU{\boldsymbol{U}}
+\def\bX{\boldsymbol{X}}
+\def\bY{\boldsymbol{Y}}
+\def\bmu{\boldsymbol{\mu}}
+\def\bSigma{\boldsymbol{\Sigma}}
+\def\bzero{\boldsymbol{0}}
+
+\def\eqas{\overset{\mbox{p.s.}}{=}}
+
+\def\cH{\mathcal{H}}
+\def\cJ{\mathcal{J}}
+\def\cS{\mathcal{S}}
+
+\def\rit{\mathcal{R}}
+\def\NN{\mathcal{N}}
+\def\RR{\mathcal{R}}
+\def\ZZ{\mathcal{Z}}
+
+\def\eps {$< 10^{-15}$}
+\def\epsm {$> 1-10^{-15}$}
+
+\def\MSE{\mbox{MSE}}
+\def\RE{\mbox{RE}}
+\def\eff{\mbox{Eff}}
+\def\Var{\mbox{Var}}
+\def\Cov{\mbox{Cov}}
+\def\var{\mbox{var}}
+
+\def\iid{i.i.d.}
+\def\toas{\mbox{ to as }}
+\def\To{\overset{D}{\to}}
+
+\newtheorem{thm}{Theorème}
+\newtheorem{defn}{Définition}
+\newtheorem{coro}{Corollaire}
+\newtheorem{prop}{Proposition}
+\newtheorem{exe}{Exemple}
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}
+\frametitle{Comparaison de deux systèmes similaires}
+
+Supposons à présent qu'il est possible de diminuer légèrement le paramètre $\gamma$ à de la loi gouvernant les durées de service, en prenant
+\[
+  \gamma = {\gamma_2} = \gamma_1(1-\delta),
+\]
+pour ${\delta} > 0$ très petit.
+
+\mbox{}
+
+Si on utilise les m\^emes nombres aléatoires, cela équivaut \`a multiplier
+les durées de service par $(1-\delta)$.
+
+\mbox{}
+
+Nous voulons estimer $\mu(\gamma_2) - \mu(\gamma_1) = E_\gamma[X_2] - E_\gamma[X_1]$,
+afin de mesurer l'effet d'augmenter un peu la vitesse des serveurs.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Comparaison de deux systèmes similaires}
+
+On simule $n$ jours pour chaque valeur de $\gamma$.
+\begin{itemize}
+\item
+${X_{1,i}}=$ valeur de $G_i(s)$ avec $\gamma_1$;
+\item
+${X_{2,i}}=$ valeur de $G_i(s)$ avec $\gamma_2$;
+\item
+${\Delta_i} = X_{2,i}-X_{1,i}$,
+\[
+  {\bar\Delta_n} = {1\over n} \sum_{i=1}^n \Delta_i
+\]
+\end{itemize}
+
+\mbox{}
+
+On peut simuler $X_{1,i}$ et $X_{2,i}$
+\begin{enumerate}[(i)]
+\item
+avec des v.a.{} indépendantes (\emph{VAI}),
+\item
+avec des v.a.{} communes (\emph{VAC}).
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Comparaison de deux systèmes similaires}
+
+Comme
+\[
+  \Var[\Delta_i] = \Var[X_{1,i}] + \Var[X_{2,i}] - 2\Cov[X_{1,i},\,X_{2,i}],
+\]
+le but des variables aléatoires communes est de rendre la covariance positive.
+
+\mbox{}
+
+Comment implanter les VAC?
+
+\mbox{}
+
+Utiliser des ``random streams'' différents pour générer:
+\begin{enumerate}
+\item
+le facteur d'achalandage $B_i$;
+\item
+les temps inter-arrivées;
+\item
+les durées des appels;
+\item
+les durées de patience.
+\end{enumerate}
+Tout est généré par inversion:  on utilise une uniforme par v.a.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Synchronisation}
+
+Lorsqu'on change les durées de service, les durées d'attente changent
+et les décisions d'abandon peuvent ainsi changer.
+
+\mbox{}
+
+Si on ne génère les durées de service que pour les clients qui 
+n'abandonnent pas, alors on peut perdre la synchronisation:
+on peut avoir une durée de service de moins \`a générer dans 
+un système que dans l'autre.
+
+\mbox{}
+
+On peut générer les durées de service:
+%
+\begin{itemize}
+\item[(a)] 
+  pour tous les appels, m\^eme les abandons,
+\item[(b)] 
+  seulement pour les appels servis.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Synchronisation}
+
+De m\^eme, la durée de patience n'a pas besoin d'\^etre générée pour 
+les clients qui n'attendent pas.  On peut la générer:
+\begin{itemize}
+\item[(c)] 
+  pour tous les appels,
+\item[(d)] 
+  seulement si nécessaire.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Synchronisation: résultats (avec ${n=10^4}$)}
+
+\begin{footnotesize}
+\begin{center}
+\begin{tabular}{|l|rr|rr|rr|}
+\hline
+% &&&&&&\\
+  \ Method
+ & \multicolumn{2}{|c}{$\delta = 0.1$}
+ & \multicolumn{2}{|c}{$\delta = 0.01$}
+ & \multicolumn{2}{|c|}{$\delta = 0.001$} \\
+ & $\bar \Delta_n$ & $\widehat{\Var}[\Delta_i]$
+ & $\bar \Delta_n$ & $\widehat{\Var}[\Delta_i]$
+ & $\bar \Delta_n$ & $\widehat{\Var}[\Delta_i]$\\
+\hline
+IRN (a + c)                      &  55.2 & 56913 &  4.98 & 45164 &  0.66 & 44046 \\
+IRN (a + d)                      &  52.2 & 54696 &  7.22 & 45192 & -1.82 & 45022 \\
+IRN (b + c)                      &  50.3 & 56919 &  9.98 & 44241 &  1.50 & 45383 \\
+IRN (b + d)                      &  53.7 & 55222 &  5.82 & 44659 &  1.36 & 44493 \\
+CRN, no sync. (b + d)            &  56.0 &  3187 &  5.90 &  1204 &  0.19 &   726 \\
+CRN (a + c)                      &  56.4 &  2154 &  6.29 &    37 &  0.62 &   1.8 \\
+CRN (a + d)                      &  55.9 &  2161 &  6.08 &   158 &  0.74 &  53.8 \\
+CRN (b + c)                      &  55.8 &  2333 &  6.25 &   104 &  0.63 &   7.9 \\
+CRN (b + d)                      &  55.5 &  2323 &  6.44 &   143 &  0.59 &  35.3 \\
+% CRN (a + c), str.\ (opt.) & &&&&& \\ 
+% CRN (a + d), str.\ (opt.) & &&&&& \\
+% CRN (b + c), str.\ (opt.) & &&&&& \\
+% CRN (b + d), str.\ (opt.) & &&&&& \\
+\hline
+\end{tabular}
+\end{center}
+\end{footnotesize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Induction de corrélation}
+
+Conditions suffisantes pour que $\Cov[X,Y]$ 
+soit positive, ou soit négative?
+
+\mbox{}
+
+Comment maximiser ou minimiser la corrélation pour des lois 
+ marginales données?
+
+\mbox{}
+
+\begin{thm}[Bornes de Fréchet]
+Parmi les paires de v.a.{} $(X,Y)$ dont les f.r.{} marginales sont 
+${F}$ et ${G}$, la paire $(X,Y) = (F^{-1}(U), G^{-1}(U))$ 
+o\`u ${U} \sim U(0,1)$, 
+\emph{maximise} $\rho[X, Y]$, \
+et la paire $(X,Y) = (F^{-1}(U), G^{-1}(1-U))$
+\emph{minimise} $\rho[X, Y]$.
+\end{thm}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Induction de corrélation}
+
+Par exemple, si la fonction de répartition d'une durée de service est 
+${F}$ dans le premier système et ${G}$ dans le second,
+et si on génère les durées de service par
+$X = F^{-1}(U)$ et $Y = G^{-1}(U)$, alors $\Cov[X, Y] \ge 0$.
+
+\begin{thm}
+Soient \ ${X} = {f}(U)$ o\`u ${U} \sim U(0,1)$ et \
+ ${Y} = {g}(V)$ o\`u ${V} \sim U(0,1)$. Alors,
+\begin{itemize}
+\item
+si $f$ et $g$ sont monotones dans le m\^eme sens et $V=U$,
+alors $\Cov[X, Y] \ge 0$;
+\item
+si $f$ et $g$ sont monotones dans le m\^eme sens et $V=1-U$,
+alors $\Cov[X, Y] \le 0$.
+\end{itemize}
+\end{thm}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Valeurs aléatoires communes (VAC)}
+
+On utilise ${\Delta} = {X_2}-{X_1}$ pour estimer 
+${\mu_2}-{\mu_1} = E[X_2] - E[X_1]$.  On a
+\[
+ \Var[\Delta] = \Var[X_1] + \Var[X_2] - 2 \, \Cov[X_1,X_2].
+\]
+\emph{Objectif}: induire une corrélation positive entre $X_1$ et $X_2$
+sans changer leurs lois individuelles.
+
+\mbox{}
+
+Technique: utiliser les m\^emes nombres aléatoires pour simuler
+les deux systèmes, en essayant de maintenir la \emph{synchronisation}
+le mieux possible.
+
+\mbox{}
+
+Si $X_k = {f_k}(\bU_k) = f_k({U_{k,1}},{U_{k,2}},\dots)$ 
+pour $k=1,2$, utiliser des VAC partout veut dire prendre $\bU_1=\bU_2$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Valeurs aléatoires communes (VAC)}
+
+\begin{thm}
+Si $f_1$ et $f_2$ sont monotones dans le m\^eme sens par rapport \`a
+tous leurs arguments, alors  $\Cov[X_1, X_2] \ge 0$.
+\end{thm}
+
+\mbox{}
+
+Pour \emph{maximiser} la corrélation, il faudrait générer
+$X_1$ et $X_2$ directement par inversion!
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Exemple: Processus de Lindley}
+
+${W_{i+1}} = \max(0,\, W_i + S_i - A_i)$, o\`u $S_i-A_i$ est
+indépendant de $W_i$.
+
+\mbox{}
+
+Si ${X_1}$ et ${X_2}$ sont des fonctions non-décroissantes des $W_i$
+pour deux processus de Lindley simulés avec des VAC, 
+alors $\Cov[X_1, X_2] \ge 0$.
+
+\mbox{}
+
+Parfois il est très difficile de vérifier les conditions du
+théorème.
+
+\mbox{}
+
+Par exemple, pour la banque ou un centre d'appels, la monotonicité
+est difficile \`a vérifier \`a cause des possibilités d'abandon.
+De plus, les conditions du théorème sont \emph{suffisantes}, mais 
+\emph{pas nécessaires}.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Valeurs aléatoires communes (VAC)}
+
+Pour \emph{tester} si c'est efficace en pratique:
+faire une \emph{expérience pilote avec les VAC} et estimer 
+$\Cov(X_1, X_2)$.
+
+\mbox{}
+
+Il n'est pas nécessaire de faire de simulations sans les VAC:
+pour estimer la variance qu'on aurait sans les VAC,
+il suffit de prendre la version empirique de $\Var[X_1] + \Var[X_2]$.
+
+\end{frame}
+
+\end{document}

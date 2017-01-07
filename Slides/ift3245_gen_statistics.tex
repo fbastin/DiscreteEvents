@@ -1,0 +1,448 @@
+\documentclass[t,usepdftitle=false]{beamer}
+\usepackage[utf8]{inputenc}
+\usetheme{Warsaw}
+\usepackage{xcolor}
+
+\usepackage{etex}
+%\usepackage{pictex}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+\usepackage{pgfplots}
+
+\usepackage{amsmath}
+\usepackage{amscd}
+\usepackage{pstricks, pst-node}
+
+\usepackage{times}
+
+\usepackage{ulem}
+
+\usepackage{amsmath, amsthm}
+\usepackage{listings}
+
+% \setbeamercovered{transparent}
+%\usecolortheme{crane}
+\title[IFT3245]{IFT 3245\\Simulation et modèles}
+\author[Fabian Bastin]{Fabian Bastin\\DIRO\\Université de Montréal}
+\date{Automne 2016}
+
+\def\be{\boldsymbol{e}}
+\def\bh{\boldsymbol{h}}
+\def\bu{\boldsymbol{u}}
+\def\bv{\boldsymbol{v}}
+\def\bx{\boldsymbol{x}}
+\def\bA{\boldsymbol{A}}
+
+\def\cH{\mathcal{H}}
+\def\cJ{\mathcal{J}}
+\def\cS{\mathcal{S}}
+
+\def\rit{\mathcal{R}}
+\def\RR{\mathcal{R}}
+\def\ZZ{\mathcal{Z}}
+
+\def\eps {$< 10^{-15}$}
+\def\epsm {$> 1-10^{-15}$}
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}
+\frametitle{Tests statistiques}
+
+L'étude des propriétés théoriques d'un générateur ne suffit;
+il est indispensable de recourir à des tests statistiques pour valider celui-ci.
+
+\mbox{}
+
+Nous formulons l'hypothèse
+\[
+ {\cH_0}\,:\, \mbox{``}\{u_0,u_1,u_2,\dots\} \mbox{ sont des variables aléatoires i.i.d. } U(0,1)\mbox{''}.
+\]
+
+\mbox{}
+
+Nous savons que $\cH_0$ est fausse, mais comment pouvons-nous le détecter?
+
+\mbox{}
+
+Pour ce faire, définissons une statistique ${T}$, fonction de $u_i$, dont la distribution
+sous $\cH_0$ est connue (ou approximativement).
+Nous rejetons $\cH_0$ si la valeur de $T$ est trop extrême.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Tests statistiques}
+
+La puissance et l'efficacité du test dépendent fortement de la classe d'alternatives.
+Différents tests détectent des problémes différents.
+
+\mbox{}
+
+L'idéal serait de disposer d'une statistique $T$ qui imite la variable aléatoire d'intérêt pratique.
+Ce n'est cependant guére réalisable en pratique.
+
+\mbox{}
+
+Impossible de construire un générateur de variables aléatoires qui passerait tous les tests. Compromis: construire un générateur qui passe le plus de tests
+raisonnables.
+
+\mbox{}
+
+La plupart des tests étudient la répartition uniforme d'un ensemble ou sous-ensemble quelconque de points produits par le générateur.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Tests statistiques}
+
+Avoir une bonne couverture uniforme ne suffit toutefois pas: les points générés doivent avoir l'apparence d'indépendance les uns par rapport aux autres.
+
+\mbox{}
+
+Les tests d'uniformité, qui représente la majeure partie des tests à notre disposition, remplissent partiellement ce second objectif dans la mesure où ils sont validés pour des sous-ensembles de points très variés.
+
+\mbox{}
+
+Certains tests cependant sont spécifiquement conçus pour tester les corrélations entre les points produits par un générateur.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{TestU01}
+
+Le logiciel TestU01 (\url{http://www.iro.umontreal.ca/~simardr/testu01/tu01.html}), implémente un nombre très important de tels tests
+Nous nous limiterons à quelques exemples afin d'illustrer les idées sous-jacentes.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Test de collisions} 
+
+Partitionnons l'hypercube $[0,1)^t$ en $k = d^t$ boîtes cubiques de
+tailles égales.
+Générons $n$ points $\bu_i = (u_{ti}, \dots, u_{ti+t-1})$ dans $[0,1)^t$, et
+posons $X_j$ le nombre de points dans la boîte $j$.
+
+\mbox{}
+
+Le nombre de collisions est donné par
+\[
+  {C} = \sum_{j=0}^{k-1} \max(0,\, X_j-1).
+\]
+
+\mbox{}
+
+Sous $\cH_0$, $C$ suit approximativement une loi de Poisson de moyenne $\lambda = n^2/(2k)$,
+pour $n$ suffisamment grand, et un petit $\lambda$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Test de collisions} 
+
+Si nous observons $c$ collisions, nous calculons la $p$-valeur à
+droite comme
+\[
+   p^+(c) = P[X \ge c \mid X \sim \mbox{ Poisson}(\lambda)].
+\]
+
+\mbox{}
+
+Nous rejetons $\cH_0$ si $p^+(c)$ est de manière consistante très
+proche de 0 (trop de collisions) ou de 1 (pas assez de collisions).
+%\  Here, we shall use $t=2$.
+
+\mbox{}
+
+Une interprétation possible est l'étude par simulation Monte Carlo du comportement probabiliste d'un algorithme de hachage.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Espacement entre anniversaires}
+
+Nous partitionnons à nouveau l'hypercube $[0,1)^t$ en $k=d^t$ boîtes
+cubiques, et générons $n$ points.
+
+\mbox{}
+
+Soit $I_{(1)}\le I_{(2)}\le \cdots\le I_{(n)}$ les numéros de boîte où les points tombent, triés par ordre croissant.
+
+\mbox{}
+
+Nous calculons les espacements
+\[
+S_j = I_{(j+1)}-I_{(j)},\ 1\le j \le n-1.
+\]
+
+\mbox{}
+Le nombre de collisions entre les espacements est défini comme
+\[
+  Y = \sum_{j=1}^{n-1} I\left[S_{(j+1)}=S_{(j)}\right].
+\]
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Espacement entre anniversaires}
+
+Pour $k$ suffisamment grand, $Y$ suit approximativement une loi de
+Poisson de moyenne $\lambda = n^3/(4k)$.
+
+\mbox{}
+
+Si $Y$ prend la valeur $y$, la $p$-valeur à droite est
+$$
+   p^+(y) = P[X \ge y \mid X \sim \mbox{ Poisson}(\lambda)].
+$$
+
+\mbox{}
+
+Interprétation comme problème de simulation: nous pouvons vouloir
+étudier la distribution de $Y$ par simulation Monte Carlo, pour des valeurs modérées de $k$ et $n$.
+
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Test d'autocorrélation}
+
+Générons $n$ uniformes $u_1,\ldots,u_n$ et calculons l'autocorrélation empirique de distance $k$:
+\[
+\hat{\rho}_k = \frac{1}{n-k} \sum_{j = 1}^{n-k} \left( u_ju_{j+k} - \frac{1}{4}\right).
+\]
+
+\mbox{}
+
+La distribution empirique de $N$ valeurs de
+\[\sqrt{12(n - k)}\hat{\rho}_k\]
+est comparée avec la distribution normale standard,
+qui est la distribution théorique asymptotique quand $n \rightarrow +\infty$.
+
+\mbox{}
+
+L'approximation n'est valide que pour $n$ très grand, et avec $k$ très
+petit en comparaison de $n$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Quelques générateurs largement utilisés}
+
+Avant 2003, le générateur dans MS Excel était
+$$
+   u_{i}  = (9821.0\,  u_{i-1} + 0.211327) \mod 1.
+$$
+Le générateur est à présent une combinaison de trois GCLs simplistes.
+A la même période, le générateur dans MS VisualBasic était
+\begin{eqnarray*}
+  x_{i} &=& (1140671485\,  x_{i-1} + 12820163) \mod 2^{24},\\
+  u_i   &=& x_i / 2^{24}. 
+\end {eqnarray*}
+Le générateur dans {\tt java.util.Random} de Java est quant à lui
+\begin{eqnarray*}
+   x_{i+1} &=& (25214903917\, x_i + 11) \mod 2^{48} \\
+   u_i &=& [2^{27}\left(x_{2i} \mod 2^{26}\right) 
+                    + x_{2i+1} \bmod 2^{27}] / 2^{53}
+\end{eqnarray*}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Résultats de tests: test de colisions}
+
+Considérons $t = 2$, $d = n/16$, $\lambda = 128$.
+\begin{center}
+\begin {tabular}{|l|cc|cc|cc|}
+\hline \rule{0pt}{11pt} $n$ & \multicolumn{2}{c|}{Java} &
+ \multicolumn{2}{c|}{VisualBasic} & \multicolumn{2}{c|}{Excel} \\
+ \rule{0pt}{11pt} & c & $p^+(c)$ & c & $p^+(c)$ & c & $p^+(c)$ \\
+ \hline $2^{14}$ & & & & & 132 & \rule{0pt}{11pt}\\ 
+ $2^{15}$ & & & 75 & $1-3.1\times 10^{-7}$ & 128 & \\ 
+ $2^{16}$ & & & 38 & \epsm & 121 & \\
+ $2^{17}$ & & &  0 & \epsm & 170 & $2.2\times 10^{-4}$\\ 
+ $2^{18}$ & & &  0 & \epsm & 202 & $9.5\times 10^{-10}$\\ 
+ $2^{19}$ & & &  0 & \epsm & 429 & \eps \\
+%  $2^{20}$     &    &       & 0  &  \epsm & ---  &   --- \\
+%  $2^{21}$     &    &       & 0  &  \epsm & ---  &   --- \\
+%  $2^{22}$     & 156 &9.0\times 10^{-3}& 0  &  \epsm & ---  &   --- \\
+%  $2^{23}$     &    &       & 0  &  \epsm & ---  &   --- \\
+%  $2^{24}$     &    &       & 8388608  &  \eps      & ---  & --- \\
+\hline
+\end {tabular}
+\end{center}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Résultats de tests: test de colisions}
+
+%\begin{comment}
+Si on rejette les dix premiers bits de chaque $u_i$: on prend $u_i :=
+1024 u_i \mod 1$.
+
+\begin {table}[h]
+\centering
+\begin {tabular}{|l|cc|cc|cc|}
+\hline
+ \rule{0pt}{11pt} $n$  &  
+\multicolumn{2}{c|}{Java} & 
+\multicolumn{2}{c|}{VisualBasic} & 
+\multicolumn{2}{c|}{Excel} \\
+ \rule{0pt}{11pt} & c & $p^+(c)$ & c & $p^+(c)$ & c & $p^+(c)$ \\
+\hline
+  $2^{14}$     &    &       & 8192  & \eps   &   & \rule{0pt}{11pt}\\
+  $2^{15}$     &    &       & 24576  &  \eps   &   & \\
+  $2^{16}$     &    &       & 57344  &  \eps   &   & \\
+  $2^{17}$     &    &       & 122880  &  \eps   &   & \\
+  $2^{18}$     &    &       & 253952  &  \eps   & 224 & $1.0\times 10^{-14}$\\
+  $2^{19}$     &160 & $3.5\times 10^{-3}$ & 516096  & \eps   & 425 & \eps \\
+\hline
+\end {tabular}
+\end {table}
+
+%\end{comment}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Espacements d'anniversaire}
+
+Considérons $t=2$, $\lambda = 1$.
+
+\hspace{-1cm}
+\begin{small}
+\begin {tabular}{|ll|cc|cc|cc|}
+\hline
+ \rule{0pt}{11pt} $n$  &  $d$ &
+\multicolumn{2}{c|}{Java} & 
+\multicolumn{2}{c|}{VisualBasic} & 
+\multicolumn{2}{c|}{Excel} \\
+\rule{0pt}{11pt} && y & $p^+(y)$ & y & $p^+(y)$ & y & $p^+(y)$\\
+\hline
+ $2^{8}$  & $2^{11}$  &  & &    &  &  &  \rule{0pt}{13pt} \\
+ $2^{10}$ & $2^{14}$  &  & & 10   & $1.1\times 10^{-7}$ &  & \\
+ $2^{12}$ & $2^{17}$  &  & & 592  &\eps  & 5 & $3.7\times 10^{-3}$ \\
+ $2^{14}$ & $2^{20}$  &  & & 11129   & \eps & 71 & \eps \\
+ $2^{16}$ & $2^{23}$  &  & & 64063   & \eps & 558  & \eps \\
+ $2^{18}$ & $2^{26}$ &14& $4.5\times 10^{-12}$ & 261604 & \eps & 4432 &\eps\\
+\hline
+\end {tabular}
+\end{small}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Espacements d'anniversaire}
+
+\begin {center}
+\begin {tabular}{|ll|cc|}
+\hline
+ \rule{0pt}{11pt} $n$  &  $d$ &
+\multicolumn{2}{c|}{LCG-16807} \\
+\rule{0pt}{11pt} && y & $p^+(y)$ \\
+\hline
+ $2^{10}$ & $2^{14}$  &  & \rule{0pt}{13pt} \\
+ $2^{12}$ & $2^{17}$  &    2 & \\
+ $2^{14}$ & $2^{20}$  &  170 & \eps \\
+ $2^{16}$ & $2^{23}$  & 10060 & \eps \\
+\hline
+\end {tabular}
+\end{center}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Espacements d'anniversaire}
+
+Et en rejetant les 10 premiers bits:
+\begin {center}
+\begin {tabular}{|l|cc|cc|cc|}
+\hline
+ \rule{0pt}{11pt} $n$  & 
+\multicolumn{2}{c|}{Java} & 
+\multicolumn{2}{c|}{VisualBasic} & 
+\multicolumn{2}{c|}{Excel} \\
+ \rule{0pt}{11pt} & y & $p^+(y)$ & y & $p^+(y)$ & y & $p^+(y)$ \\
+\hline
+  $2^{8}$    &   & &  52  &\eps   &  &  \rule{0pt}{13pt} \\
+  $2^{9}$    &   & &  199  &\eps  &  &  \\
+  $2^{10}$   &   & &  672   &\eps  &  & \\
+  $2^{11}$   &   & &   1754  &  \eps & &  \\
+  $2^{12}$   &   & &  3901  & \eps &  &  \\
+  $2^{13}$   &   & &  8102  & \eps &  &  \\
+  $2^{14}$   &   & &  16374  &\eps  &  &  \\
+  $2^{15}$   & 21  &$6.0\times 10^{-15}$ & 32763   &\eps  &  &  \\
+  $2^{16}$   & 99  &\eps & 65531   & \eps & 7 & $4.5\times 10^{-3}$  \\
+  $2^{17}$   & 697  &\eps &  ---  &---  & 34 &   \eps \\
+  $2^{18}$   & 639  & \eps  &---  &---  & 186 &   \eps  \\
+\hline
+\end {tabular}
+\end {center}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Tests systématiques pour des familles de générateurs de nombres aléatoires}
+
+Pour une famille de générateurs de nombres aléatoires, on cherche une relation su type
+$[
+  n_0 \approx K \rho^{\gamma},
+$]
+où $n_0$ est la taille d'échantillon minimum pour obtenir un fort rejet,
+$\rho$ est la longueur de période, et $K$ et $\gamma$ sont des constantes.
+
+Pour des GCLs, on obtient (grossièrement) pour le test de collisions:
+\[
+n_0 \approx 16 \rho^{1/2}, 
+\]
+et pour le test d'espacement entre anniversaires:
+\[
+n_0 \approx 16 \rho^{1/3}. 
+\]
+
+Nous souhaitons dès lors construire le générateur de nombres aléatoires avec $\rho$ suffisamment grand de sorte que
+générer $n_0$ nombres est infaisable en pratique.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Librairie de tests} 
+
+Tests effectués sur la plupart des générateurs existants.
+
+\mbox{}
+
+Pratiquement aucun des générateurs présent dans les logiciels
+commerciaux ne passe tous les tests.
+Vrai en particulier pour les générateurs modulo-2.
+
+\mbox{}
+
+Les vainqueurs sont des MRG avec une bonne période et une bonne structure,
+des générateurs multiplicatifs ``lagged-Fibonacci'', des générateurs
+non-linéaires conçus pour la cryptologie, et certains générateurs avec
+des composantes venant de différentes familles.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Librairie de tests} 
+
+Il est possible de combiner efficacité empirique et théorique, comme l'illustre le MRG32k3a.
+
+\mbox{}
+
+Note: générateur multiplicatifs ``lagged-Fibonacci''. Forme de base
+\[
+x_n = x_{n-r}*x_{n-k} \mbox{ mod } m.
+\]
+Il a moins de propriétés mathématiques connues, difficultés du choix de $r$ et
+de $k$, initialisation complexe.
+$m$ est souvent pris comme une puissance de 2.
+
+\end{frame}
+
+\end{document}

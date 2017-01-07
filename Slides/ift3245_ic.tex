@@ -1,0 +1,671 @@
+\documentclass[t,usepdftitle=false]{beamer}
+\usepackage[utf8]{inputenc}
+\usetheme{Warsaw}
+\usepackage{xcolor}
+
+\usepackage{etex}
+\usepackage{pictex}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+\usepackage{pgfplots}
+
+\usepackage{amsmath}
+\usepackage{amscd}
+\usepackage{pstricks, pst-node}
+
+\usepackage{times}
+
+\usepackage{ulem}
+
+\usepackage{amsmath, amsthm}
+\usepackage{listings}
+
+% \setbeamercovered{transparent}
+%\usecolortheme{crane}
+\title[IFT3245]{IFT 3245\\Simulation et modèles}
+\author[Fabian Bastin]{Fabian Bastin\\DIRO\\Université de Montréal}
+\date{Automne 2016}
+
+\def\be{\boldsymbol{e}}
+\def\bh{\boldsymbol{h}}
+\def\bu{\boldsymbol{u}}
+\def\bv{\boldsymbol{v}}
+\def\bx{\boldsymbol{x}}
+\def\bA{\boldsymbol{A}}
+\def\bP{\boldsymbol{P}}
+\def\bX{\boldsymbol{X}}
+\def\bY{\boldsymbol{Y}}
+
+\def\cH{\mathcal{H}}
+\def\cJ{\mathcal{J}}
+\def\cS{\mathcal{S}}
+
+\def\rit{\mathcal{R}}
+\def\NN{\mathcal{N}}
+\def\RR{\mathcal{R}}
+\def\ZZ{\mathcal{Z}}
+
+\def\eps {$< 10^{-15}$}
+\def\epsm {$> 1-10^{-15}$}
+
+\def\MSE{\mbox{MSE}}
+\def\RE{\mbox{RE}}
+\def\eff{\mbox{Eff}}
+\def\Var{\mbox{Var}}
+\def\var{\mbox{var}}
+
+\def\iid{i.i.d.}
+\def\toas{\mbox{ to as }}
+\def\To{\overset{D}{\to}}
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}
+\frametitle{Estimation et intervalles de confiance}
+
+\begin{itemize}
+\item
+Déterminer les quantités à mesurer déterminées.
+\item
+Construire des estimateurs de celles-ci.
+\item
+Mesurer leur précision.
+\end{itemize}
+
+\mbox{}
+
+{\bf Définition}
+Un {\sl estimateur} $\hat{\mu}$ d'une quantité fixe, mais
+inconnue, $\mu$, est une variable ou un vecteur aléatoire qui associe
+aux données une valeur supposée approcher la véritable valeur $\mu$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Efficacité des estimateurs}
+
+Considérons un estimateur $X$ d'une certaine quantité inconnue $\mu$.
+
+\mbox{}
+
+Le {\em biais}, la {\em variance}, l'{\em erreur quadratique moyenne} (MSE, pour
+mean square error), et l'{\em erreur relative} (RE, pour relative error) de $X$
+sont définis respectivement comme suit: 
+\begin{eqnarray*}
+ \beta     &=& E[X] -\mu;\\
+ \sigma^2  &=& \Var(X) ~=~ E[(X - E[X])^2];\\
+ \MSE[X]   &=& E[(X-\mu)^2] ~=~ \beta^2 + \sigma^2;\\
+ \RE[X]    &=& \sqrt{\MSE[X]}/|\mu|, \ \mbox{ pour } \mu\not=0.
+\end{eqnarray*}
+
+\mbox{}
+
+Un estimateur sera dit non-biaisé si $\beta = 0$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Efficacité des estimateurs}
+
+La racine carrée du $MSE[X]$ est appelée l'{\em erreur absolue};
+c'est une mesure de la précision statistique de l'estimateur $X$,
+et $RE[X]$ est une mesure de cette prédiction relativement à
+l'ordre de grandeur de la moyenne $\mu$.
+
+\mbox{}
+
+Supposons de plus que l'effort numérique requis pour calculer
+$X$ (par exemple en termes de temps CPU) est une variable aléatoire
+(typiquement corrélée avec $X$) et dénotons son espérance
+mathématique par $C(X)$.
+
+\mbox{}
+
+L'efficacité de $X$ est
+\begin{equation}
+  \eff(X) ~=~ {1\over C(X) \cdot \MSE(X)}.                 \label{eq:eff}
+\end{equation}
+Un estimateur de $X$ sera dit être {\em plus efficace\/} qu'un autre
+estimateur $Y$ si $\eff(X) > \eff(Y)$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Amélioration d'efficacité}
+
+Améliorer l'efficacité signifie trouver un estimateur $Y$ qui est plus efficace que l'estimateur $X$ actuellement utilisé.
+
+\mbox{}
+
+Souvent, les deux estimateurs sont non biaisés, et sont supposés
+présenter des temps de calcul similaires.
+Par conséquent, améliorer l'efficacité revient dans ce cas à réduire la
+variance.
+Pour cette raison, nous parlerons souvent de techniques de réduction
+de variance.
+
+\mbox{}
+
+Il est toutefois parfois possible d'améliorer l'efficacité en
+augmentant la variance tout en réduisant le coût de calcul.
+
+\mbox{}
+
+Si le temps de calcul n'est pas pris en compte, nous appellerons
+$\Var[X]/\Var[Y]$ le \emph{facteur de réduction de
+  variance} de $Y$
+par rapport à $X$.
+Il représente le facteur par lequel la variance est réduite en
+utilisant $Y$ au lieu de $X$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Intervalle de confiance}
+
+Toute mesure de qualité est imparfaite ou incomplète. Ainsi,
+l'efficacité $\eff[X]$ suppose que le coût de l'erreur est symétrique 
+et proportionnel à son carré. 
+
+\mbox{}
+
+Un autre aspect important que $\eff[X]$ ne mesure pas est la disponibilité d'une bonne façon d'évaluer l'erreur d'estimation.
+
+\mbox{}
+
+Par exemple, si on estime cette erreur par la variance de $X$, 
+il nous faut un bon estimateur de cette variance.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Intervalle de confiance}
+
+L'évaluation de l'erreur d'estimation est habituellement fournie 
+en donnant un intervalle de confiance (IC), défini comme suit.
+
+\mbox{}
+
+{\bf Intervalle de confiance.}\\
+Un intervalle de confiance $[I_1, I2]$ pour une quantité $\mu$ est un
+intervalle défini au moyen de deux variables aléatoires $I_1$ et $I_2$
+satisfaisant $I_1 \leq I_2$, donnant une certaine probabilité de
+contenir $\mu$.
+
+\mbox{}
+
+$[{I_1},\, {I_2}]$ est un intervalle de confiance de niveau
+$1-{\alpha}$ (ou à $100(1-\alpha)\%$) pour $\mu$ si $P[I_1\le \mu\le
+I_2] = 1-\alpha$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Intervalle de confiance}
+
+Habituellement, on construit un intervalle de confiance pour un niveau \emph{visé}
+ou \emph{nominal} $1-\alpha$, mais la véritable probabilité de
+couverture est différente et inconnue.
+La différence est l'erreur de couverture.
+
+\mbox{}
+
+La \emph{largeur} de l'intervalle est $I_2-I_1$ (une variable
+aléatoire).
+Idéalement, nous voudrions assurer la bonne couverture, tout en conservant
+$E[I_2-I_1]$ et $\Var[I_2-I_1]$ petits.
+
+\mbox{}
+
+Par abus de notation, nous dénoterons parfois une suite d'estimateurs $\{Y_n,\, n\ge 1\}$ par ${Y_n}$.
+Deux exemples classiques sont $\overline{X}_n$ et $S_n^2$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Intervalle de confiance}
+
+Lorsque $n\to\infty$, $Y_n$ est dit \emph{asymptotiquement sans biais} si
+$E[Y_n - \mu] \to 0$,
+\emph{consistant} si $Y_n \to \mu$ en probabilité,
+i.e. $P[|Y_n-\mu| > \epsilon] \to 0$ pour tout $\epsilon > 0$,
+et \emph{fortement consistant} si $Y_n \to \mu$ avec probabilité 1 (ou
+presque sûrement).
+
+\mbox{}
+
+$\overline{X}_n$ et $S_n^2$ pour sont ainsi fortement consistants par
+rapport à $\mu = E[X_i]$.
+
+\mbox{}
+
+Un intervalle de confiance $(I_{n,1},\, I_{n,2})$ est asymptotiquement valide si son erreur de couverture converge vers 0.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Erreur non prise en compte}
+
+Les intervalles de confiance considérés ici prennent en compte
+l'erreur due aux aléas de la simulation, mais pas l'erreur dans
+l'estimation des paramètres du modèle.
+
+\mbox{}
+
+Supposons par exemple que dans un certain système, les durées de
+service sont indépendantes et suivent la loi gamma de paramètres
+$(\alpha,\, \beta)$ inconnus.
+Supposons de plus que nous disposions de 200 observations de durées de
+service et que l'on estime $(\alpha,\, \beta)$ par $(\hat{\alpha},\,
+\hat{\beta})$ à partir de ces 200 observations.
+
+\mbox{}
+
+On suppose pour simplifier que l'on identifie la bonne loi.
+
+\mbox{}
+\\
+On utilise ensuite la loi estimée dans un modèle de simulation et on
+calcule un intervalle de confiance pour une mesure de performance quelconque (par exemple, la durée d'attente moyenne) en faisant $n$ répétitions de la simulation
+avec la loi estimée. 
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Erreur non prise en compte}
+
+Si $n$ tend vers l'infini, la largeur de l'intervalle de confiance
+tend vers 0, mais l'estimateur converge vers la valeur exacte du
+modèle avec $(\hat{\alpha},\, \hat{\beta})$, qui diffère de celle du
+modèle avec $(\alpha\, \beta)$.
+
+\mbox{}
+
+Il y a donc deux sources d'erreur:
+\begin{enumerate}
+\item
+l'une due au fait que $n$ est fini,
+\item
+l'autre due à l'erreur dans les paramètres du modèle.
+\end{enumerate}
+
+\mbox{}
+
+Souvent, il y a plusieurs sources d'erreur de ce second type et elles
+dominent lorsque $n$ est grand.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Horizon fini}
+
+Supposons que nous observons ${X_1,\dots,X_n}$, des copies \iid{} de
+$X$ obtenues en faisant ${n}$ répétitions de la simulation, et que
+nous voulons estimer ${\mu} = E[X]$.
+
+\mbox{}
+
+Nous estimons $\mu$ par $\overline{X}_n$ et $\sigma^2 = \var[X]$ par $S_n^2$.
+
+\mbox{}
+
+{\bf Théorème}\\
+Si $X_1,\dots,X_n$ sont \iid{} $N(\mu,\sigma^2)$, alors
+\begin{enumerate}[(i)]
+\item
+$\overline{X}_n$ et $S_n^2$ sont \emph{indépendants};
+\item
+$(n-1) S_n^2/\sigma^2 \sim \chi^2(n-1)$;
+\item
+$\sqrt{n}(\overline{X}_n - \mu)/S_n \sim$ \emph{Student-$t (n-1)$}.
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Horizon fini}
+
+Ce théorème permet de calculer un intervalle de confiance pour $\mu$ au niveau
+$1-\alpha$:
+\[
+(\overline{X}_n \pm t_{n-1,1-\alpha/2} S_n/\sqrt{n}), 
+\]
+où $P[T_{n-1} \le t_{n-1,1-\alpha/2}] = 1 - \alpha/2$.
+
+\mbox{}
+
+Lorsque $n$ est grand, nous pouvons approximer la loi Student-$t$ à $n-1$ degrés de liberté au moyen d'une $N(0,1)$.
+
+
+\mbox{}
+
+Pour obtenir un intervalle de confiance pour $\sigma^2$, on choisira $x_1$ et $x_2$ tels que 
+$$
+  P[x_1 < \chi^2_{n-1} < x_2] = 1-\alpha,
+$$
+ce qui permet de poser
+$$
+  [{I_1}, {I_2}] = [(n-1)S_n^2/x_2,\, (n-1)S_n^2/x_1].
+$$ 
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Horizon fini}
+
+Nous avons alors
+\begin{eqnarray*}
+ P[I_1 \le \sigma^2 \le I_2] 
+  &=& P[(n-1)S_n^2/x_2 \le \sigma^2 \le (n-1)S_n^2/x_1] \\
+  &=& P[x_1 \le (n-1)S_n^2/\sigma^2 \le x_2] \\
+  &=& 1-\alpha.
+\end{eqnarray*}
+
+\mbox{}
+
+Ceci n'est valide que si les $X_i$ suivent la loi normale.
+
+\mbox{}
+
+Le tableau ci-après explicite les
+bornes $(n-1)/x_1$ et $(n-1)/x_2$ d'un intervalle de confiance sur $\sigma^2/S_n^2$.
+Par exemple, pour ${n=1000}$, un intervalle de confiance à $90\%$ pour $\sigma^2$ est donné par
+\[
+  [0.930\, S_n^2,\; 1.077\, S_n^2]
+\]
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Horizon fini}
+
+Bornes $(n-1)/x_1$ et $(n-1)/x_2$ d'un intervalle de confiance sur $\sigma^2/S_n^2$:
+\begin{tabular}{|r|cc|cc|}
+\hline
+ & \multicolumn{2}{c|}{${\alpha=0.02}$} & \multicolumn{2}{c|}{${\alpha=0.10}$} \\
+\hline 
+  ${n}$  & $(n-1)/x_1$ & $(n-1)/x_2$ & $(n-1)/x_1$ & $(n-1)/x_2$ \\
+\hline
+ 10 &      0.388 &      3.518
+    &      0.492 &      2.284 \\
+ 30 &      0.570 &      1.939 
+    &      0.663 &      1.568 \\
+100 &      0.729 &      1.413 
+    &      0.796 &      1.270 \\
+300 &      0.831 &      1.216 
+    &      0.876 &      1.146 \\
+1000&      0.902 &      1.111
+    &      0.930 &      1.077 \\
+\hline
+\end{tabular}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Horizon fini}
+
+Si on a deux échantillons indépendants, $X_1,\dots,X_m$ 
+\iid\ normales de variance ${\sigma_x^2}$ 
+et $Y_1,\dots,Y_n$ \iid\ normales de variance ${\sigma_y^2}$,
+on peut calculer un intervalle de confiance sur le
+\emph{rapport des deux variances}, en utilisant le fait que 
+$$
+  {F} = {S_{x,m}^2 / \sigma_x^2 \over S_{y,n}^2/\sigma_y^2 }
+    = {S_{x,m}^2 \sigma_y^2 \over S_{y,n}^2 \sigma_x^2 }
+    \sim F(m-1,n-1),
+$$
+où ${S_{x,m}^2}$ et ${S_{y,n}^2}$ sont les variances 
+échantillonnales.
+
+\mbox{}
+
+Si $P[x_1 < F < x_2] = 1-\alpha$, l'intervalle est
+\[
+  [I_1, I_2] = \left[{1\over x_2}{S_{x,m}^2 \over S_{y,n}^2},\, 
+                     {1\over x_1}{S_{x,m}^2 \over S_{y,n}^2}\right]. 
+\]
+Ce type d'intervalles est potentiellement utile lorsqu'on estime le 
+\emph{facteur de réduction de variance} entre deux estimateurs.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Approximation normale}
+
+Lorsque $n$ est grand, $\overline{X}_n$ est approximativement normale même si
+$X$ ne l'est pas, en vertu du théorème de la limite centrale (TLC).
+
+\mbox{}
+
+Il existe plusieurs versions du TLC: $X_i$ de lois différentes, dépendance,
+TLCs multivariés, TLC fonctionnels, etc.
+Nous citerons le résultat suivant.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Approximation normale}
+
+{\bf Théorème.}\\
+Soient $X_1,X_2,\dots$ des variables aléatoires indépendantes, avec  $E[X_i]=\mu_i$ et $\Var[X_i] = \sigma_i^2$.
+Posons ${s_n^2} = \sigma_1^2 + \cdots + \sigma_n^2$,
+$$
+  {Y_n} = {(X_1-\mu_1) + \cdots + (X_n-\mu_n) \over s_n },
+$$
+et ${F_n(x)} = P[Y_n\le x]$. Alors, $E[Y_n]=0$, $\Var[Y_n]=1$, et
+\[
+ \sup_{n\ge 1,\, x\in\RR} |F_n(x) - \Phi(x)|
+  \le \kappa\; {E(|X_1-\mu_1|^3) + \cdots + E(|X_n-\mu_n|^3) \over s_n^3}
+\]
+où $\kappa=3$ si les $X_i$ sont \iid{} et $\kappa=6$ sinon.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Approximation normale}
+
+La borne sur l'erreur dépend donc de l'assymétrie des distributions.
+Sous l'hypothèse où $n$ est suffisamment grand que pour pouvoir approximer la distribution de $\overline{X}_n$,
+nous pourrons choisir pour un intervalle de confiance
+\[
+\left[ \overline{X}_n - z_{1-\alpha/2}S_n/{\sqrt{n}}, \overline{X}_n + z_{1-\alpha/2}S_n/{\sqrt{n}} \right],
+\]
+où $z_{1-\alpha/2}$ est le quantile $1-\alpha/2$ d'une normale $N(0,1)$.
+
+\mbox{}
+
+Nous pouvons raisonablement recourir au TLC pour calculer un intervalle de
+confiance, sauf si un des cas suivant se présente:
+\begin{itemize}
+\item
+$n$ est trop petit,
+\item
+$\alpha$ est proche de 0,
+\item
+les $X_i$ ont une loi très asymétrique,
+\item
+il existe des moments supérieurs très élevés.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Exemple: binomiale}
+
+Supposons ${n}=1000$, $X_i \sim$ \emph{Binomiale}$(1,p)$; on veut estimer ${p}$.
+Si on a 882 succès, $\overline{X}_n = {0.882}$.
+
+\mbox{}
+
+On a alors $S_n^2 = \overline{X}_n (1-\overline{X}_n) n/(n-1) \approx {0.1042}$
+et un intervalle de confiance à 95\%\ (approximativement) est
+$(\overline{X}_n \pm 1.96 S_n/\sqrt{n}) \approx (0.862,\, 0.902)$.
+
+\mbox{}
+
+L'intervalle de confiance ainsi construit nous donne aussi une idée
+des chiffres significatifs de l'estimateur.
+
+\mbox{}
+
+Mais si $\overline{X}_n = {0.998}$, alors on voit que $p$ est trop proche de 1
+et l'approx.\ normale sera très mauvaise.
+Dans ce cas, on va plutôt utiliser:
+$Y = \sum_{i=1}^n (1-X_i) \approx $ \emph{Poisson$(n(1-p))$}.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Exemple: durée de vie d'un système}
+
+Soit $X = \min(G_1, max(G_2,G_3))$.
+Les $G_j$ sont i.i.d. Weibull ($\alpha = 0.5$, $\beta= 1$).
+On simule $n$ fois, avec $X_i$ la valeur de $X$ pour la répétition $i$.
+On calcule un intervalle de confiance à 90\% pour $E[X]$ via le théorème de la limite centrale.
+\begin{center}
+\begin{tabular}{ccc}
+\hline
+$n$ & Prob. couverture & Estim. $E[I_2 - I_1]/\mu$ \\
+\hline
+5 & 0.708 $\pm$ 0.03 & 1.16 \\
+10 & 0.750 $\pm$ 0.03 & 0.82 \\
+20 & 0.800 $\pm$ 0.03 & 0.60 \\
+40 & 0.840 $\pm$ 0.03 & 0.44 \\
+\hline
+\end{tabular}
+\end{center}
+Il y a dégradation significative de la couverture.
+Les $G_j$ (et les $X_i$) suivent en effet une loi très éloignée de la normale, et on se
+trompe beaucoup en calculant un intervalle de confiance basé sur la loi normale.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Intervalle de confiance pour une loi discrète}
+
+Soit ${Y}$ une variable aléatoire prenant ses valeurs dans
+$\{0,1,2,\dots\}$ et suivant une loi de paramètre ${\mu}$, telle que
+$P_\mu[Y \ge y]$ est croissant en $\mu$, où $P_\mu$ dénote la
+probabilité quand la valeur du paramètre est $\mu$.
+(Le cas décroissant se traite de manière symétrique.)
+
+\mbox{}
+
+Des exemples de telles distribution comptent les lois binomiale, géométrique, de Poisson,\ldots
+
+\mbox{}
+
+On veut un intervalle de confiance $[I_1,I_2]$ de niveau (approximatif) $1-\alpha$ pour $\mu$.
+Posons $\alpha = \alpha_1 + \alpha_2$, avec $\alpha_1 > 0$
+et $\alpha_2 > 0$.
+
+\mbox{}
+
+Nous voudrions
+$P[\mu < I_1] \approx {\alpha_1}$ et $P[\mu > I_2] \approx{\alpha_2}$.
+Si on observe $Y = y$, l'intervalle sera $[{I_1(y)}, {I_2(y)}]$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Intervalle de confiance pour une loi discrète}
+
+\emph{Algorithme:} Prendre pour $I_1(y)$ et $I_2(y)$ les solutions de
+\begin{equation}
+ \alpha_1 = P_{I_1}[Y \ge y] \quad \mbox{ et } \quad
+ \alpha_2 = P_{I_2}[Y \le y].
+ \label{eq:ic_discrete}
+\end{equation}
+
+\mbox{}
+
+Ceci revient à fixer la probabilité que la variable $Y$ soit
+supérieure (respectivement inférieure) à l'observation $y$, si le
+paramètre inconnu était de valeur $I_1$ (respectivement $I_2$).
+
+\mbox{}
+
+Dans chacune de ces deux configurations, on s'attend à ce qu'un
+événement ait une faible probabilité, vu qu'une faible (forte) valeur
+de $\mu$ défavorise l'évenement considéré, et ce en raison de la
+monotonie de $P_{\mu}[Y \ge y]$ par rapport à $\mu$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Intervalle de confiance pour une loi discrète}
+
+Nous pouvons résoudre par recherche binaire, par exemple.
+
+\mbox{}
+
+Pour le cas où $Y$ est décroissant avec $\mu$, il suffit de permuter
+les signes $\geq$ et $\leq$.
+
+{\sl
+La probabilité de couverture de cet intervalle est d'au moins $1-\alpha$.
+}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Intervalle de confiance pour une loi discrète}
+
+\begin{proof}
+Soit ${y^*(\mu)} = \min\{y\in\NN : I_1(y)\ge \mu\}$ et 
+${\nu} = I_1(y^*(\mu)) \ge \mu$.
+Par conséquent, en vertu de la
+croissante de $P_{\mu}$ avec $\mu$,
+\[
+ P_\mu[I_1(Y) \ge \mu]  \le P_\nu[I_1(Y) \ge \mu ]
+ = P_\nu [Y \ge y^*(\mu)] = \alpha_1.
+\]
+On montre de même que $P_\mu[I_2(Y)\le\mu] \le \alpha_2$.
+
+Nous avons dès lors
+\begin{align*}
+P_\mu [ I_1(Y) \leq \mu \leq I_2(Y) ]  & = 1 - P[ \mu < I_1(Y) \cup I_2(Y) < \mu ] \\
+& = 1 - P_\mu[ \mu < I_1(Y) ] - P_\mu[I_2(Y) < \mu] \\
+& \geq 1 - \alpha_1 - \alpha_2 = 1-\alpha.
+\end{align*}
+\end{proof}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Intervalle de confiance pour une loi discrète}
+
+La probabilité de couverture \emph{exacte} dépend de $F_\mu$
+et est généralement inconnue.
+
+\mbox{}
+
+Reprenons l'exemple de la binomiale.
+
+\mbox{}
+
+Supposons que $X_1,\ldots,X_n$ sont i.i.d. avec $P[X_i = 1] = 1 - P[X_i = 0] = p$, de sorte que $Y = n \overline{X_n} = \sum_{i=1}^n X_i$ suit une binomiale$(n,p)$.
+
+\mbox{}
+
+Intervalle de confiance sur $p$ basé sur l'observation de $Y$?
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Intervalle de confiance pour une loi discrète}
+
+Pour n'importe quelles valeurs de $p$ et de $y$, les probabilités dans l'intervalle de confiance peuvent être calculées en sommant les probabilités binomiales exactes si $y$ est petit.
+
+\mbox{}
+
+Si $n$ est grand et $p$ est petit, $Y$ suit approximativement une variable aléatoire de Poisson de moyenne $np$, aussi peut-on approximer les probabilités dans en additionnant les probabilités de Poisson appropriées.
+
+\mbox{}
+
+Pour $p$ proche de 1, nous pouvons  simplement remplacer $p$ et $X_i$ par $1-p$ et $1-X_i$.
+
+\end{frame}
+
+\end{document}

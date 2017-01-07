@@ -1,0 +1,334 @@
+\documentclass[t,usepdftitle=false]{beamer}
+\usepackage[utf8]{inputenc}
+\usetheme{Warsaw}
+\usepackage{xcolor}
+
+\usepackage{etex}
+\usepackage{pictex}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+\usepackage{pgfplots}
+
+\usepackage{amsmath}
+\usepackage{amscd}
+\usepackage{pstricks, pst-node}
+
+\usepackage{times}
+
+\usepackage{ulem}
+
+\usepackage{amsmath, amsthm}
+\usepackage{listings}
+
+% \setbeamercovered{transparent}
+%\usecolortheme{crane}
+\title[IFT3245]{IFT 3245\\Simulation et modèles}
+\author[Fabian Bastin]{Fabian Bastin\\DIRO\\Université de Montréal}
+\date{Automne 2016}
+
+\def\be{\boldsymbol{e}}
+\def\bh{\boldsymbol{h}}
+\def\bu{\boldsymbol{u}}
+\def\bv{\boldsymbol{v}}
+\def\bx{\boldsymbol{x}}
+\def\bA{\boldsymbol{A}}
+\def\bP{\boldsymbol{P}}
+\def\bX{\boldsymbol{X}}
+\def\bY{\boldsymbol{Y}}
+\def\bmu{\boldsymbol{\mu}}
+\def\bSigma{\boldsymbol{\Sigma}}
+\def\bzero{\boldsymbol{0}}
+
+\def\eqas{\overset{\mbox{p.s.}}{=}}
+
+\def\cH{\mathcal{H}}
+\def\cJ{\mathcal{J}}
+\def\cS{\mathcal{S}}
+
+\def\rit{\mathcal{R}}
+\def\NN{\mathcal{N}}
+\def\RR{\mathcal{R}}
+\def\ZZ{\mathcal{Z}}
+
+\def\eps {$< 10^{-15}$}
+\def\epsm {$> 1-10^{-15}$}
+
+\def\MSE{\mbox{MSE}}
+\def\RE{\mbox{RE}}
+\def\eff{\mbox{Eff}}
+\def\Var{\mbox{Var}}
+\def\Cov{\mbox{Cov}}
+\def\var{\mbox{var}}
+
+\def\iid{i.i.d.}
+\def\toas{\mbox{ to as }}
+\def\To{\overset{D}{\to}}
+
+\newtheorem{thm}{Theorème}
+\newtheorem{defn}{Définition}
+\newtheorem{coro}{Corollaire}
+\newtheorem{prop}{Proposition}
+\newtheorem{exe}{Exemple}
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}
+\frametitle{Intervalle basé sur une simulation unique}
+
+Supposons ici que le processus $\{{C_j},\, j\ge 1\}$ est stationnaire,
+avec $E[C_j]={\mu}$, (e.g., la partie ``échauffement'' a déjà
+été enlevée.)
+
+\mbox{}
+
+Si nous estimons $\mu$ par $\bar C_n$, comment pouvons-nous estimer $\Var[\bar C_n]$?
+
+\mbox{}
+
+Deux techniques particulières:
+\begin{itemize}
+\item
+moyennes par lots;
+\item
+simulation regénérative.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Moyennes par lots (``batch means'')}
+
+C'est l'approche la plus simple et la plus populaire pour les
+systèmes complexes.
+L'idée de base consiste à regrouper les ${n}$ observations en ${k}$
+\emph{lots} de taille ${\ell} = n/k$.
+Nous pouvons alors écrire
+\begin{itemize}
+\item
+moyenne pour le lot $i$:
+$$
+  {X_i} = {1\over \ell} \sum_{j=\ell (i-1)+1}^{\ell i} C_j.
+$$
+\item
+moyenne globale:
+$$
+ {\bar X_k} = {1\over k} \sum_{i=1}^k X_i = \bar C_n.
+$$
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Moyennes par lots (``batch means'')}
+
+Si $\ell$ est grand, on s'attend à ce que les $X_i$ soient très 
+peu corrélés et suivent à peu près la loi normale.
+
+\mbox{}
+
+
+Sous certaines conditions additionnelles, il est possible de prouver
+que c'est le cas pour $\ell \rightarrow \infty$, et $k$ fixé.
+Nous pouvons alors calculer un intervalle de confiance en faisant
+l'hypothèse que les $X_i$ sont \iid{} $N(\mu, \sigma_x^2)$,
+et que donc $\sqrt{k}(\bar X_k - \mu)/ S_k \sim$ Student$(k-1)$.
+
+\mbox{}
+
+Il est souvent recommandé de choisir $\ell$ le plus grand possible
+et $k\le 30$.
+Un $k$ plus petit diminue le \emph{bias} $E[S_k^2/k] - \Var[\bar X_k]$,
+mais augmente la variance de $S_k^2/k$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Simulation regénérative}
+
+L'idée consiste à écrire la moyenne sur horizon infini comme un rapport
+de deux espérances sur horizon fini.
+
+\mbox{}
+
+\begin{defn}{Processus regénératif}
+\index{processus!regeneratif@regénératif}
+Un processus stochastique $\{{Y(t)},\; t\ge 0\}$ 
+est \emph{regénératif} (au sens classique) s'il existe
+une variable aléatoire ${\tau_1} > 0$ telle que 
+$\{Y(\tau_1+t),\; t\ge 0\}$ est stochastiquement équivalent à
+$\{Y(t),\; t\ge 0\}$ et indépendant de $\tau_1$ et de 
+$\{Y(t),\; t<\tau_1\}$.
+\end{defn}
+
+La variable aléatoire $\tau_1$ est un \emph{instant de regénération}.
+La trajectoire du processus sur l'intervalle de temps $(0,\tau_1]$
+est un \emph{cycle regénératif}, et si $E[\tau_1] < \infty$, le processus est dit \emph{récurrent positif}.
+
+\mbox{}
+
+L'adaptation au cas discret est évidente.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Simulation regénérative}
+
+Si $\{Y(t),\; t\ge 0\}$ est regénératif, alors 
+$\{Y(\tau_1+t),\; t\ge 0\}$ est aussi regénératif avec un
+instant de regénération ${\tau_2}$, etc.
+
+\mbox{}
+
+On a ainsi une suite infinie d'instants de regénération
+$0 =\tau_0 < \tau_1 < \tau_2 \dots$ et de cycles regénératifs \iid
+
+\mbox{}
+
+Parfois, le premier cycle est différent des autres:
+le processus est regénératif \emph{avec délai}
+(à partir de $\tau_1$), mais l'effet est négligeable à long terme.
+
+\mbox{}
+
+Si $\{Y(t),\; t\ge 0\}$ est regénératif aux instants 
+$\tau_1,\tau_2,\dots$ et si ${C(t)} = f(Y(t))$, alors
+$\{C(t),\, t\ge 0\}$ est aussi regénératif aux mêmes instants.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Simulation regénérative: exemple}
+
+File $GI/G/1$\index{GI/G/1@$GI/G/1$} stable.
+
+\mbox{}
+
+Si $W_1=0$, si les v.a.\ $S_i-A_i$ sont \iid{} et  $E[S_i - A_i] < 0$, alors
+$\{{W_i},\, i\ge 1\}$ est regénératif et on peut prendre pour instants 
+de regénération les époques $i$ où ${W_i=0}$.
+
+\mbox{}
+
+Le processus $\{{Q(t)},\; t\ge 0\}$ regénère aussi, aux instants
+où un client \emph{arrive} dans un système vide.
+
+\mbox{}
+
+Mais peut-on prendre les instants où le système \emph{se vide} comme instants
+de regénération? La réponse est positive seulement dans le cas $M/G/1$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Simulation regénérative: exemple}
+
+Centre d'appels
+
+\mbox{}
+
+Supposons qu'un centre d'appels opère pour une suite infinie de jours \iid.
+Il ouvre à 8h et ferme à 21h.
+
+\mbox{}
+
+Soit ${t}$ le temps écoulé depuis le premier jour à minuit,
+en heures, et ${Q(t)} =$ le nombre d'appels dans la file au temps $t$.
+%  Si ${t_0} \in [0,8]\cup[21,24]$,
+Le processus $\{Q(t),\; t\ge 0\}$ regénère à 
+${\tau_j} = 24j$ pour $j=1,2,\dots$.
+
+\mbox{}
+
+Si ${X_j}=$ nombre d'appels reçus au jour $j$,
+$\{X_j,\, j\ge 0\}$ regénère à ${\tau_j} = j$ pour tout $j$ 
+(\emph{processus de renouvellement}).
+
+\mbox{}
+
+Il en est de même pour $\{Z_j,\, j\ge 0\}$ si 
+${Z_j}=$ nombre d'abandons au jour $j$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Théorème du renouvellement avec gains}
+
+Soit $\{{C_i},\;i\ge 0\}$ un processus regénératif aux instants 
+${\tau_j}$, $j\ge 0$, et $N(t)$ le nombre d'événements qui se sont produits au cours de l'intervalle $[0,t]$.
+
+\mbox{}
+
+Posons 
+\[
+  {X_j} = V_{N(\tau_j)}-V_{N(\tau_{j-1})},
+\]
+le coût pour le cycle $j$, et
+\[
+  {Y_j} =  \tau_{j} - \tau_{j-1},
+\]
+la durée du cycle $j$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Théorème du renouvellement avec gains}
+
+\begin{thm}
+Si $E[Y_j] > 0$ et $E[|X_j|] < \infty$, alors,
+\begin{eqnarray*}
+  \bar v &\overset{\mbox{def}}{=}& \lim_{t\to\infty} {E[V_{N(t)}]\over t}
+         ~=~ {E[X_j]\over E[Y_j]}
+                \qquad\mbox{(version \emph{espérance}),}
+\end{eqnarray*}
+et
+\begin{eqnarray*}
+  \bar v &\eqas& \lim_{t\to\infty} {V_{N(t)}\over t}
+                \qquad\mbox{(version \emph{trajectoire})}.
+\end{eqnarray*}
+\end{thm}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Théorème du renouvellement avec gains}
+
+Une fois le nombre de cycles ${n}$ fixé, nous retrouvons le problème d'estimation du quotient
+$\bar v = E[X_j]/ E[Y_j]$ à partir des observations \iid{} $(X_1,Y_1),\dots,(X_n,Y_n)$.,
+
+\mbox{}
+
+Toutefois, pour une durée de la simulation à ${t}$, le nombre de cycles
+${M(t)} = \sup\{n \ge 0: \tau_n \le t\}$ est aléatoire.
+
+\mbox{}
+
+Lorsque nous atteignons $t$, nous pouvons terminer le cycle en cours (nous aura $M(t)+1$ cycles), ou
+ignorer le cycle en cours (nous en aurons $M(t)$).
+La variance est dans $O(1/t)$ dans les deux cas.
+Le biais sur $\bar v$ est dans $O(1/t^2)$ pour la première approche, et $O(1/t)$ pour la seconde.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Théorème du renouvellement avec gains}
+
+\begin{thm}
+Sous les conditions du théorème de la limite centrale pour un quotient, quand $t\to\infty$, % (Th. 3.6),
+\begin{align*}
+ {\sqrt{M(t)} (\hat v_{M(t)} - v) \over \hat\sigma_{g,M(t)}} & \To
+ {\sqrt{t/\bar Y_{M(t)}} (\hat v_{M(t)} - v) \over \hat\sigma_{g,M(t)}} \\
+ &\To {\sqrt{t/E[Y_1]} (\hat v_{M(t)} - v) \over \hat\sigma_{g,M(t)}} \\
+  &\To N(0,1),
+%\label{eq:regeneration}
+\end{align*}
+où $\sigma_g$ est défini comme dans le cadre du théorème delta.
+
+\mbox{}
+
+Le résultat demeure valide si nous remplaçons $M(t)$ par $M(t)+1$.
+\end{thm}
+
+\end{frame}
+
+\end{document}

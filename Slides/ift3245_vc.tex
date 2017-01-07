@@ -1,0 +1,332 @@
+\documentclass[t,usepdftitle=false]{beamer}
+\usepackage[utf8]{inputenc}
+\usetheme{Warsaw}
+\usepackage{xcolor}
+
+\usepackage{etex}
+\usepackage{pictex}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+\usepackage{pgfplots}
+
+\usepackage{amsmath}
+\usepackage{amscd}
+\usepackage{pstricks, pst-node}
+
+\usepackage{times}
+
+\usepackage{ulem}
+
+\usepackage{amsmath, amsthm}
+\usepackage{listings}
+
+% \setbeamercovered{transparent}
+%\usecolortheme{crane}
+\title[IFT3245]{IFT 3245\\Simulation et modèles}
+\author[Fabian Bastin]{Fabian Bastin\\DIRO\\Université de Montréal}
+\date{Automne 2016}
+
+\def\be{\boldsymbol{e}}
+\def\bh{\boldsymbol{h}}
+\def\bu{\boldsymbol{u}}
+\def\bv{\boldsymbol{v}}
+\def\bx{\boldsymbol{x}}
+\def\bA{\boldsymbol{A}}
+\def\bC{\boldsymbol{C}}
+\def\bP{\boldsymbol{P}}
+\def\bU{\boldsymbol{U}}
+\def\bX{\boldsymbol{X}}
+\def\bY{\boldsymbol{Y}}
+
+\def\bbeta{\boldsymbol{\beta}}
+\def\bmu{\boldsymbol{\mu}}
+\def\bnu{\boldsymbol{\nu}}
+\def\bSigma{\boldsymbol{\Sigma}}
+\def\bzero{\boldsymbol{0}}
+
+\def\eqas{\overset{\mbox{p.s.}}{=}}
+
+\def\cH{\mathcal{H}}
+\def\cJ{\mathcal{J}}
+\def\cS{\mathcal{S}}
+
+\def\rit{\mathcal{R}}
+\def\NN{\mathcal{N}}
+\def\RR{\mathcal{R}}
+\def\ZZ{\mathcal{Z}}
+
+\def\eps {$< 10^{-15}$}
+\def\epsm {$> 1-10^{-15}$}
+
+\def\MSE{\mbox{MSE}}
+\def\RE{\mbox{RE}}
+\def\eff{\mbox{Eff}}
+\def\Var{\mbox{Var}}
+\def\Cov{\mbox{Cov}}
+\def\var{\mbox{var}}
+
+\def\iid{i.i.d.}
+\def\toas{\mbox{ to as }}
+\def\To{\overset{D}{\to}}
+
+\newtheorem{assumption}{Hypothèse}
+\newtheorem{thm}{Theorème}
+\newtheorem{defn}{Définition}
+\newtheorem{coro}{Corollaire}
+\newtheorem{prop}{Proposition}
+\newtheorem{exe}{Exemple}
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}
+\frametitle{Variables de contrôle (VC)}
+
+\emph{Idée}: exploiter de l'information auxiliaire pour faire une
+\emph{correction} \`a l'estimateur.
+
+\mbox{}
+
+On se restreint ici aux VCs \emph{linéaires}.
+
+\mbox{}
+
+Soit ${X}$ un estimateur sans biais de ${\mu}$ et
+$\bC = ({C^{(1)}},\dots,{C^{(q)}})^T$ des VCs
+corrélées avec $X$, d'espérance connue 
+$E[\bC] = \bnu = ({\nu^{(1)}},\dots,{\nu^{(q)}})^T$.
+
+\mbox{}
+
+L'estimateur avec VC est:
+\[ {X_{\rm c}} = X - \bbeta^T (\bC-\bnu)
+             = X - \sum_{\ell=1}^q \beta_\ell (C^{(\ell)}-\nu^{(\ell)}),
+\]
+o\`u $\bbeta = ({\beta_1},\dots,{\beta_q})^T$ (des constantes).\\
+On a $E[X_{\rm c}] = E[X] = \mu$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Choix de $\bbeta$}
+
+Comment choisir $\bbeta$?
+
+\mbox{}
+
+Soient ${\bSigma_{\rm c}} = \Cov[\bC]$ et 
+${\bSigma_{\rm c\rm X}} = (\Cov(X,C^{(1)}),\ldots,\Cov(X,C^{(q)}))^T$.
+
+\mbox{}
+
+\begin{assumption}[CV1]
+$\Var[X] = {\sigma^2} < \infty$, 
+$\bSigma_{\rm c}$ et $\bSigma_{\rm c\rm X}$ sont finies, et
+$\bSigma_{\rm c}$ est définie positive (et donc inversible).
+\end{assumption}
+
+\mbox{}
+
+On a alors
+$$ \Var[X_{\rm c}] = \Var[X] + \bbeta^T\bSigma_{\rm c}\bbeta 
+ - 2\bbeta^T\bSigma_{\rm c\rm X}.$$
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Choix de $\bbeta$}
+ 
+Pour minimiser par rapport à $\bbeta$, il suffit d'annuler le gradient par rapport à $\bbeta$:
+\[
+ 0 = \nabla_{\bbeta}\Var[X_{\rm c}] = 2\bSigma_{\rm c}\bbeta 
+                             - 2\bSigma_{\rm c\rm X}.
+\]
+
+\mbox{}
+
+Le minimum est donc atteint pour 
+ $$ \bbeta = {\bbeta^*} =  \bSigma_{\rm c}^{-1}\bSigma_{\rm c\rm X},$$
+qui donne la variance minimale
+ $$ \Var[X_{\rm c}] ~=~ (1-R^2_{\rm c\rm X}) \Var[X] 
+                       \overset{\mbox{def}}{=} {\sigma_{\rm c}^2}, $$
+o\`u
+ $$ {R^2_{\rm c\rm X}} = {\bSigma_{\rm c\rm X}^T \bSigma_{\rm c}^{-1} 
+                      \bSigma_{\rm c\rm X} \over \Var[X]} $$
+(le carré du coefficient de corrélation multiple entre $\bC$ et $X$)
+et la variance est réduite par le facteur 
+$1-R^2_{\rm c\rm X} = \sigma_{\rm c}^2 / \sigma^2$.
+Mais avec $\bbeta\not=\bbeta^*$, la variance peut augmenter.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Types de VCs}
+
+\begin{itemize}
+\item [(a)] variables \emph{internes}, basées sur des quantités déj\`a
+   calculées durant la simulation;
+\item [(b)] variables \emph{externes}, obtenues par des simulations 
+   additionnelles;
+\item [(c)] VCs implicites obtenues via une \emph{moyenne pondérée}.\\
+   Soient ${X^{(0)}}, \dots, {X^{(q)}}$ 
+   des estimateurs sans biais de $\mu$.  Posons
+   $$ {X_{\rm c}} = \sum_{\ell=0}^q \beta_\ell X^{(\ell)}
+       = X^{(0)} - \sum_{\ell=1}^q \beta_k (X^{(0)} - X^{(\ell)}) $$
+o\`u $\sum_{\ell=0}^q \beta_\ell = 1$. \\
+On peut interpréter 
+${C^{(\ell)}} = X^{(0)} - X^{(\ell)}$, $\ell=1,\dots,q$,
+comme VC pour $X = X^{(0)}$.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Estimation de $\bbeta^*$: propriétés asymptotiques}
+
+En pratique, on ne connaît pas 
+${\bbeta^*} =  \bSigma_{\rm c}^{-1}\bSigma_{\rm c\rm X}$
+(parfois $\bSigma_{\rm c}$, mais jamais $\bSigma_{\rm c\rm X}$).
+
+\mbox{}
+
+On peut l'estimer, disons par ${\hat{\bbeta}_n}$, calculé \`a 
+partir de $(X_1,\bC_1),\dots,(X_n,\bC_n)$.
+
+\mbox{}
+
+Posons
+\[
+  {X_{\rm ce,i}} = X_i - \hat{\bbeta}_n^T (\bC_i - \bnu),
+\]
+et
+\[
+  {\bar X_{\rm ce,n}} = \bar X_n - \hat{\bbeta}_n^T (\bar\bC_n - \bnu). 
+\]
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Estimation de $\bbeta^*$: propriétés asymptotiques}
+
+\begin{thm}
+Sous l'hypothèse CV1, lorsque $n\to\infty$, 
+si ${\hat{\bbeta}_n} \To \bbeta^*$, alors
+\begin{align*}
+  \sqrt{n}(\bar X_{\rm c,n} - \bar X_{\rm ce,n}) 
+    &\To& 0,                                        \\
+  {S^2_{\rm ce,n}} ~\overset{\mbox{def}}{=}~ {1\over n}
+       \sum_{i=1}^n (X_{\rm ce,i} -\bar X_{\rm ce,n})^2
+    &\To& \sigma_{\rm c}^2,                          \\
+  \frac{\sqrt{n}(\bar X_{\rm ce,n} - \mu)}{S_{\rm ce,n}} ~\To~ 
+  \frac{\sqrt{n}(\bar X_{\rm c,n} - \mu)}{\sigma_{\rm c}}
+    &\To& N(0,1).                                   
+\end{align*}
+\end{thm}
+
+\mbox{}
+
+On peut utiliser ce théorème pour \emph{calculer un IC} pour $\mu$,
+en supposant que $\sqrt{n}(\bar X_{\rm ce,n} - \mu)/S_{\rm ce,n} \sim N(0,1)$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Construction de $\hat{\bbeta}_n$}
+
+\emph{Méthode de base}:
+\[
+ {\hat{\bbeta}_n} =  \hat{\bSigma}_{\rm c}^{-1} \hat{\bSigma}_{\rm c\rm X}
+\]
+o\`u les éléments de ${\hat{\bSigma}}_{\rm c}$ et 
+${\hat{\bSigma}}_{\rm c\rm X}$ sont
+\begin{eqnarray*}
+ {\hat\sigma_{\rm c}^{(\ell,k)}} 
+  &=& \frac{1}{n-1} \sum_{i=1}^n 
+    (C_i^{(\ell)} - \bar C_n^{(\ell)}) (C_i^{(k)} - \bar C_n^{(k)}),\\
+ {\hat\sigma_{\rm c\rm X}^{(\ell)}} 
+  &=& \frac{1}{n-1} \sum_{i=1}^n 
+     (X_i - \bar X_n) (C_i^{(\ell)} - \bar C_n^{(\ell)}).
+\end{eqnarray*}
+  
+\end{frame}
+
+\begin{frame}
+\frametitle{Cas multinormal}
+
+Dans le cas o\`u $\begin{pmatrix}X_i \\ \bC_i \end{pmatrix} \sim$
+  \emph{normal}, on peut utiliser la théorie de la
+  \emph{régression linéaire} (avec estimateurs moindres carrés)
+  pour le modèle
+\[
+  X = \mu + \bbeta^T(\bC-\bnu) + \epsilon
+\]
+o\`u ${\epsilon} \sim N(0,\sigma_\epsilon^2)$. 
+
+\mbox{}
+
+ Si on définit
+\[
+  {\tilde S^2_{\rm ce,n}} = {n\over n-q-1} \left( {1\over n}
+     + {(\bar\bC_n-\bnu)^T \hat{\bSigma}_{\rm c}^{-1}(\bar\bC_n-\bnu)
+         \over n-1}\right)
+       \sum_{i=1}^n (X_{\rm ce,i} -\bar X_{\rm ce,n})^2,
+\]
+o\`u $\hat{\bbeta}_n$ utilise les covariances empiriques, on a le théorème ci-après.
+  
+\end{frame}
+
+\begin{frame}
+\frametitle{Cas multinormal}
+
+\begin{thm}
+Si les $(X_i,\bC_i^T)^T$ sont i.i.d\ normaux, alors
+\begin{eqnarray*}
+ E[\bar X_{\rm ce,n}] &=& \mu \qquad \mbox{(\emph{aucun biais})}, \\
+ E[\tilde S^2_{\rm ce,n}/n]  &=& \Var[\bar X_{\rm ce,n}] 
+     ~=~ {n-2\over n-q-2} (1-R_{\rm c\rm X}^2) \Var[\bar X_n],\\
+ \sqrt{n}(\bar X_{\rm ce,n} - \mu)/\tilde S_{\rm ce,n} 
+   &\sim& \mbox{Student}(n-q-1)  \qquad \mbox{(\emph{loi exacte})}.
+\end{eqnarray*}
+
+\mbox{}
+
+\end{thm}
+Permet de calculer un IC avec couverture exacte pour $n$ fini.
+
+\emph{Facteur d'inflation} de la variance $(n-2)/(n-q-2) > 1$ 
+d\^u \`a l'estimation de $\bbeta^*$.
+Si on a déj\`a ${q}$ VC, l'ajout d'une nouvelle VC n'est rentable que
+si la valeur de $(1-R_{\rm c\rm X}^2)$ est réduite d'une fraction
+$\ge 1/(n-q-2)$.
+  
+\end{frame}
+
+\begin{frame}
+\frametitle{Expériences pilotes pour estimer $\bbeta^*$?}
+
+Pour avoir un estimateur sans biais de $\bbeta^*$,
+on peut faire une expérience pilote de ${n_0}$ observations,
+calculer un estimateur ${\hat{\bbeta}_0}$ et l'utiliser pour 
+les $n-n_0$ observations restantes.  On obtient:
+\begin{eqnarray*}
+ \bar X_{\rm cp,n} &=& {1\over n-n_0} \sum_{i=n_0+1}^n
+                     (X_i - \hat{\bbeta}_0^T (\bC_i - \bnu)) 
+  \mbox { \ et} \\
+ S^2_{\rm cp,n}    &=& {1\over (n-n_0-1)}
+   \sum_{i=n_0+1}^n (X_i - \hat{\bbeta}_0^T 
+           (\bC_i - \bnu) - \bar X_{\rm cp,n})^2.
+\end{eqnarray*}
+
+\mbox{}
+
+On a $E[\bar X_{\rm cp,n}] = \mu$ et 
+$E[S^2_{\rm cp,n}/(n-n_0)] = \Var[\bar X_{\rm cp,n}]$.
+
+Mais sous l'hypothèse de normalité,
+ $$ {\Var[\bar X_{\rm cp,n}] \over \Var[\bar X_{\rm ce,n}]} =
+    {n(n-q-2)(n_0-2) \over (n-n_0)(n-2)(n_0-q-2)} > 1. $$
+C'est donc \emph{inefficace}.
+
+\end{frame}
+
+\end{document}

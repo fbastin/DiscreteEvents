@@ -1,0 +1,300 @@
+\documentclass[t,usepdftitle=false]{beamer}
+
+\usepackage[utf8]{inputenc}
+\usetheme{Warsaw}
+\usepackage{xcolor}
+
+\usepackage{etex}
+\usepackage{pictex}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+\usepackage{pgfplots}
+
+\usepackage{amsmath}
+\usepackage{amscd}
+\usepackage{pstricks, pst-node}
+
+\usepackage{times}
+
+\usepackage{ulem}
+
+\usepackage{amsmath, amsthm}
+\usepackage{listings}
+
+% \setbeamercovered{transparent}
+%\usecolortheme{crane}
+\title[IFT3245]{IFT 3245\\Simulation et modèles\\
+Esp\'erance conditionnelle (EC) \\ 
+ou Monte Carlo conditionnel (CMC)}
+\author[Fabian Bastin]{Fabian Bastin\\DIRO\\Université de Montréal}
+\date{Automne 2016}
+
+\def\be{\boldsymbol{e}}
+\def\bh{\boldsymbol{h}}
+\def\bu{\boldsymbol{u}}
+\def\bv{\boldsymbol{v}}
+\def\bx{\boldsymbol{x}}
+\def\bA{\boldsymbol{A}}
+\def\bC{\boldsymbol{C}}
+\def\bD{\boldsymbol{D}}
+\def\bI{\boldsymbol{I}}
+\def\bM{\boldsymbol{M}}
+\def\bP{\boldsymbol{P}}
+\def\bU{\boldsymbol{U}}
+\def\bX{\boldsymbol{X}}
+\def\bY{\boldsymbol{Y}}
+
+\def\bbeta{\boldsymbol{\beta}}
+\def\bmu{\boldsymbol{\mu}}
+\def\bnu{\boldsymbol{\nu}}
+\def\bSigma{\boldsymbol{\Sigma}}
+\def\bzero{\boldsymbol{0}}
+
+\def\eqas{\overset{\mbox{p.s.}}{=}}
+
+\def\cA{\mathcal{A}}
+\def\cB{\mathcal{B}}
+\def\cG{\mathcal{G}}
+\def\cH{\mathcal{H}}
+\def\cJ{\mathcal{J}}
+\def\cL{\mathcal{L}}
+\def\cS{\mathcal{S}}
+
+\def\rit{\mathcal{R}}
+\def\NN{\mathcal{N}}
+\def\RR{\mathcal{R}}
+\def\ZZ{\mathcal{Z}}
+
+\def\eps {$< 10^{-15}$}
+\def\epsm {$> 1-10^{-15}$}
+
+\def\MSE{\mbox{MSE}}
+\def\RE{\mbox{RE}}
+\def\eff{\mbox{Eff}}
+\def\Var{\mbox{Var}}
+\def\Cov{\mbox{Cov}}
+\def\var{\mbox{var}}
+
+\def\names{}
+
+\def\iid{i.i.d.}
+\def\toas{\mbox{ to as }}
+\def\To{\overset{D}{\to}}
+
+\newtheorem{assumption}{Hypothèse}
+\newtheorem{thm}{Theorème}
+\newtheorem{defn}{Définition}
+\newtheorem{coro}{Corollaire}
+\newtheorem{prop}{Proposition}
+\newtheorem{exe}{Exemple}
+
+\def\Black{}
+\def\yel{}
+\def\tan{}
+\def\rme{{\rm e}}
+
+%\def\mid{\,|\,}
+
+\def\eqdef{\overset{déf}{=}}
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}
+\frametitle{Un exemple simple}
+
+Supposons que l'on veut estimer 
+$\yel{\mu} = P[\yel{Y_1} + \cdots + \yel{Y_t} > \yel{x}]$.
+
+Estimateur \'evident: $\yel{X} = I[Y_1+\cdots+Y_t > x]$.
+
+Estimateur CMC: $\yel{X_{\rme,s}} = P[Y_1+\cdots+Y_t > x \mid Y_1,\dots,Y_s]$,
+pour $\yel{s}\le t$.
+
+\mbox{}
+
+Si $s=t$: aucun changement.
+
+Si $s=t-1$ et les $Y_j$ sont ind\'ependants:
+$X_{\rme,t-1} = 1 - F_t[Y_1 + \cdots + Y_{t-1}]$.
+
+Si $s=0$: $X_{\rme,0} = P[Y_1+\cdots+Y_t > x] = \mu$ \ 
+(variance r\'eduite \`a z\'ero).
+
+\mbox{}
+
+En fait plus $s$ est petit, plus la variance est r\'eduite.
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Cadre g\'en\'eral}
+	
+	\emph{Id\'ee}: remplacer l'estimateur $\yel{X}$ par $E[X\mid \yel{Z}]$
+	o\`u $Z$ est une autre v.a., ou plus g\'en\'eralement par $E[X\mid \yel{\cG}]$,
+	o\`u $\cG$ est une $\sigma$-alg\`ebre donnant une \emph{information partielle} sur $X$.
+	
+	\mbox{}
+
+	L'estimateur CMC s'\'ecrit
+	\[
+	X_{\rme} \eqdef E[X\mid \cG]
+	\]
+	et on a
+	\[
+	E[X_{\rme}] = E[E[X\mid \cG]] = E[X].
+	\]
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Cadre g\'en\'eral}
+
+De plus,
+	\[
+	\Var[X] = E[{
+		\underbrace{\Black\Var[X\mid \cG]}_{\begin{array}{c}
+			\mbox{\names{\small Var.\ r\'esiduelle}}\\
+			\mbox{\names{\small lorsque $\cG$ est connu}}\\ 
+			\mbox{\names{\small (\'elimin\'e par CMC)}}\\
+			\end{array}}}\hskip-10pt]  
+	~+~ {\underbrace{\Black\Var[E[X\mid \cG]]}_{\begin{array}{c}
+			\mbox{\names{\small Var.\ due \`a la}}\\  
+			\mbox{\names{\small variation de $\cG$}}\\
+			\end{array}}
+	}
+	\]
+	et donc 
+	\[
+	\emph{\Var[X_{\rme}]} ~=~ \Var [X] - E[\Var[X\mid \cG]] ~\le~ \Var[X].
+	\]
+	(Cas particulier du th\'eor\`eme de Rao-Blackwell.)
+	
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+	\frametitle{Cadre g\'en\'eral}
+	
+	Pour minimiser la variance, on doit maximiser $E[\Var[X\mid \cG]]$,
+	i.e., \emph{$\cG$ doit contenir le moins d'information possible}.
+	
+	On peut en effet montrer que $\cG_1\subset\cG_2$ implique que 
+	$E[\Var[X\mid \cG_1]] \ge E[\Var[X\mid \cG_2]]$.
+	
+	\emph{Mais} moins $\cG_1$ contient d'information, plus il est difficile
+	de calculer $X_\rme$.
+	
+	On doit donc faire un \emph{compromis}.
+	
+	Dans certains cas, $X_\rme$ peut \^etre moins co\^uteux \`a calculer que $X$.
+	
+	\emph{Cas limites}:\\
+	Si $\cG$ ne contient \emph{aucune information} pertinente \`a $X$:
+	$\yel{X_\rme} = E[X\mid\cG] = E[X] = \mu$.\\
+	Si $\cG$ permet de calculer $X$ (i.e., $X$ est \emph{$\cG$-mesurable}): 
+	$\yel{X_{\rme}} = X$.
+	
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]
+	\frametitle{Exemple: r\'eseau d'activit\'es stochastique}
+	
+	On veut estimer $\mu = P[T > x]$.	
+	Estimateur na\"{i}f: $\yel{X} = I[T > x]$.
+	
+	
+	Soit $\yel{\cL}\subseteq\cA$ un ensemble d'activit\'es (arcs) tel que
+	chaque chemin de la source au puits contient exactement un arc de $\cL$.
+	($\cL$ est une coupe orient\'ee.) Exemple: $\cL = \{ V_4, V_5, V_6 \}$.
+
+\begin{small}
+	%
+	\begin{center}
+		\input{san-cmc.tex}
+	\end{center}
+\end{small}	
+	%
+	Soit $\yel{\cB} = \cA\setminus\cL$ et $\yel{\cG} = \{V_j,\, j \in\cB\}$.
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+	\frametitle{Estimateur CMC}
+	
+	\[
+	\yel{X_\rme} = P[T > x\mid \{V_j,\, j \in\cB\}].
+	\]
+	On le calcule comme suit.
+	
+	Pour chaque $\yel{l}\in\cL$, allant disons de $\yel{a_l}$ \`a $\yel{b_l}$,
+	calculer la longueur $\yel{\alpha_l}$ du plus long chemin de la source 
+	\`a $a_l$,
+	puis la longueur $\yel{\beta_l}$ du plus long chemin de $b_l$ au puits.
+	Aucun chemin passant par $l$ n'est plus long que $x$ ssi
+	$\alpha_l + V_l + \beta_l \le x$.
+	
+	
+	Conditionnellement \`a $\{V_j,\, j \in\cB\}$, on a cette condition 
+	avec probabilit\'e $P[V_l \le x - \alpha_l - \beta_l] 
+	= F_l[x - \alpha_l - \beta_l]$.
+	
+	
+	Puisque les $V_l$ sont ind\'ependants, on obtient
+	\[
+	\yel{X_\rme} = 1 - \prod_{l\in\cL} F_l[x - \alpha_l - \beta_l].
+	\]
+	Remarque: cet estimateur peut \^etre moins co\^uteux \`a calculer que $X$.
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\frametitle{Estimateur CMC}
+	
+	Avec l'exemple tir\'e de Avramidis et Wilson (1998), cette m\'ethode
+	r\'eduit la variance environ par un facteur 4.
+	
+	
+	Dans cet exemple, on peut aussi utiliser les $V_j$, et peut-\^etre
+	les $V_j^2$, comme variables de contr\^ole. 
+	On sait que ces variables sont corr\'el\'ees avec $X_\rme$.
+	
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+	\frametitle{Exemple: banque}
+	
+	
+	Soit $\yel{B}$ le nombre d'abandons dans une journ\'ee.
+	On peut estimer $E[B]$ par $B$.
+	
+	
+	Supposons maintenant que l'on rend les \emph{abandons invisibles}.\\
+	$\yel{\cG}$ represente tout le reste de l'information.
+	
+	\mbox{}
+	
+	L'estimateur CMC est $B_{\rme} = E[B \mid \cG]$.
+	
+	
+	Soit $\yel{\lambda(t)}$ le taux d'arriv\'ee au temps $t$;\\
+	$\yel{N(t)}$ le nombre de clients dans le syst\`eme au temps $t$;\\
+	$\yel{P(t)} = p_{N(t)}$.
+	
+	
+	Le processus d'arriv\'ee conditionnel (invisible) des clients qui 
+	abandonnent est un processus de Poisson de taux 
+	$\{\lambda(t) P(t),\, t\ge 0\}$. 
+	
+\end{frame}
+
+\end{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
